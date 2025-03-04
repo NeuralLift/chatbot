@@ -1,3 +1,4 @@
+import path from 'path';
 import cors from 'cors';
 import express, { Application } from 'express';
 
@@ -20,26 +21,32 @@ export class Server {
   private initializeMiddlewares() {
     // Add your middlewares here
     this.app.use(express.json());
-    this.app.use(
-      cors({
-        origin: 'http://localhost:5173',
-      })
-    );
+    this.app.use(cors());
   }
 
   private initializeRoutes() {
     // Add your routes here
-    // this.app.get('/', (req, res) => {
-    //   res.sendFile(path.join(__dirname, '../web/dist/index.html'));
-    // });
 
-    // this.app.use(express.static(path.join(__dirname, '../web/dist')));
+    // Serve the static files from the React app
+    this.app.get('/', (_req, res) => {
+      res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
+    });
+    this.app.use(
+      express.static(path.join(__dirname, '../../web/dist'), {
+        maxAge: '1d',
+      })
+    );
 
-    //V1 Routes
-    this.app.use('/api/v1', v1Router);
+    // V1 Routes
+    this.app.use('/api', v1Router);
 
-    //Error Handler
+    // Error Handler
     this.app.use(errorHandler);
+
+    // Catch-all route to handle client-side routing
+    this.app.get('*', (_req, res) => {
+      res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
+    });
   }
 
   public listen() {
