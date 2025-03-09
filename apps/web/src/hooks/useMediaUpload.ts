@@ -51,7 +51,7 @@ export function useMediaUpload() {
         })
       );
 
-      const storeDocumentRes = await fetch('/api/v1/store', {
+      const storeDocumentRes = await fetch('/api/chat/store', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

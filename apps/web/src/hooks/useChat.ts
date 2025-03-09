@@ -3,10 +3,10 @@ import { create } from 'zustand';
 import { Message } from '@/types/interface/chat';
 
 type ChatState = {
-  question: string;
+  // question: string;
   messages: Message[];
 
-  setQuestion: (question: string) => void;
+  // setQuestion: (question: string) => void;
   setMessages: (updater: Message | ((prev: Message[]) => Message[])) => void;
 };
 
@@ -22,5 +22,5 @@ export const useChatStore = create<ChatState>()((set) => ({
           : [...state.messages, updater],
     })),
 
-  setQuestion: (question) => set({ question }),
+  // setQuestion: (question) => set({ question }),
 }));

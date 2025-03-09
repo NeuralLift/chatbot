@@ -16,14 +16,14 @@ import AppResponse from '../../utils/appResponse';
  * @param {Error} err The error that occurred
  * @param {Request} req The request object
  * @param {Response} res The response object
- * @param {NextFunction} next The next middleware function in the stack
+ * @param {NextFunction} _next The next middleware function in the stack
  * @returns {void}
  */
 export const errorHandler: ErrorRequestHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   console.error(`
     \x1b[31mError Occurred:\x1b[0m

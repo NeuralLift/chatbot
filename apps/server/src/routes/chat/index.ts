@@ -1,11 +1,14 @@
 import { Router } from 'express';
 
-import { createMessage, storeDocument } from '../../services/chat';
+import { chatController } from '../../controllers/chat';
 
 const chatRouter: Router = Router();
 
-chatRouter.post('/', createMessage);
+// GET
 
-chatRouter.post('/store', storeDocument);
+//POST
+chatRouter.post('/', chatController.createNewMessage);
+
+// chatRouter.post('/store', storeDocument);
 
 export default chatRouter;

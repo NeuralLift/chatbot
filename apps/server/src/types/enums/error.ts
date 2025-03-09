@@ -14,6 +14,7 @@ export const ErrorCodeEnum = {
 
   // Validation and Resource Errors
   VALIDATION_ERROR: 'VALIDATION_ERROR',
+  BAD_REQUEST: 'BAD_REQUEST',
   RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
 
   // System Errors

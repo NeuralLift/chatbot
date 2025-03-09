@@ -15,8 +15,10 @@
     }
   },
   "lint-staged": {
+    "apps/server/**/*.{jsx,js,ts,tsx}": [
+      "eslint --fix"
+    ],
     "*.{jsx,js,ts,tsx}": [
-      "eslint --fix",
       "prettier --write \"**/*.{ts,tsx,mdx}\""
     ]
   },

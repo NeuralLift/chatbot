@@ -12,9 +12,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/v1': {
+      '/api': {
         target: 'http://localhost:3000',
-        changeOrigin: true,
+        changeOrigin: process.env.NODE_ENV === 'development',
         secure: false,
         configure: (proxy) => {
           proxy.on('error', (err) => {

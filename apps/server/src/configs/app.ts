@@ -14,7 +14,7 @@ interface AppConfig {
  *
  * @returns {AppConfig} An object containing the application's configuration.
  */
-const appConfig = (): AppConfig => ({
+const config = (): AppConfig => ({
   NODE_ENV: getEnv('NODE_ENV', 'development'),
   PORT: getEnv('PORT', '3000'),
   BASE_API_PATH: getEnv('BASE_API_PATH', '/api'),
@@ -28,4 +28,6 @@ const appConfig = (): AppConfig => ({
   RATE_REQUEST_LIMIT: getEnv('RATE_REQUEST_LIMIT', '1000'),
 });
 
-export default appConfig();
+const appConfig = config();
+
+export default appConfig;

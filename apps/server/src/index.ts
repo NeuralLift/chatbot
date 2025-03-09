@@ -4,6 +4,7 @@ import express, { Application } from 'express';
 
 import 'dotenv/config';
 
+import { limiter } from './configs/limiter';
 import { errorHandler } from './middleware/errors';
 import v1Router from './routes';
 
@@ -22,6 +23,7 @@ export class Server {
     // Add your middlewares here
     this.app.use(express.json());
     this.app.use(cors());
+    this.app.use(limiter);
   }
 
   private initializeRoutes() {

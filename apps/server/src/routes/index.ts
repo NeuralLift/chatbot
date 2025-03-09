@@ -3,17 +3,23 @@ import { createRouteHandler } from 'uploadthing/express';
 
 import { uploadRouter } from '../utils/uploadthing';
 import appConfig from './../configs/app';
+import agentRouter from './agent';
 import chatRouter from './chat';
+import conversationRouter from './conversation';
+import datasourceRouter from './datasource';
 
 const v1Router: Router = Router();
 
 v1Router.use('/chat', chatRouter);
+v1Router.use('/agent', agentRouter);
+v1Router.use('/datasource', datasourceRouter);
+v1Router.use('/conversation', conversationRouter);
 v1Router.use(
   '/uploadthing',
   createRouteHandler({
     router: uploadRouter,
     config: {
-      callbackUrl: `${appConfig.SERVER_ORIGIN}/api/v1/uploadthing`,
+      callbackUrl: `${appConfig.SERVER_ORIGIN}/api/uploadthing`,
     },
   })
 );

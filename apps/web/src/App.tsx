@@ -1,21 +1,19 @@
-import { ChatScreen } from '@/components/chat/ChatScreen';
-import { ChatWelcomeScreen } from '@/components/chat/ChatWelcomeScreen';
+import { BrowserRouter } from 'react-router';
+
+import ReactQueryProvider from '@/components/ReactQueryProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
-import { useChatStore } from '@/hooks/useChat';
+import { AppRoutes } from '@/routes';
 
 function App() {
-  const { messages } = useChatStore();
-
   return (
-    <ThemeProvider defaultTheme="light">
-      <div className="relative h-full w-full max-w-full overflow-hidden">
-        <div className="flex min-h-screen items-center justify-center">
-          {messages.length > 0 ? <ChatScreen /> : <ChatWelcomeScreen />}
-        </div>
-
-        <Toaster />
-      </div>
+    <ThemeProvider defaultTheme="system">
+      <ReactQueryProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster position="top-center" richColors />
+        </BrowserRouter>
+      </ReactQueryProvider>
     </ThemeProvider>
   );
 }

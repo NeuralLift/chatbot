@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  avatar        String
+  email         String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  integrations  Integration[]
+}
+
+model Agent {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  description      String?
+  type             AgentType
+  model            String
+  system_prompt    String
+  user_prompt      String
+  prompt_variables Json?
+  successRate      Float?
+  active           Boolean
+  lastActive       DateTime
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  conversations    Conversation[]
+  datasources      AgentOnDatasource[]
+}
+
+enum AgentType {
+  AI
+  HUMAN
+}
+
+enum PriorityType {
+  low
+  medium
+  high
+}
+
+enum StatusType {
+  active
+  resolved
+  pending
+}
+
+model Conversation {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String       @db.ObjectId
+  agentId   String       @db.ObjectId
+  messages  Message[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  category  String
+  priority  PriorityType
+  status    StatusType
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String     @db.ObjectId
+  role           SenderType
+  content        String
+  createdAt      DateTime   @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+enum SenderType {
+  human
+  ai
+}
+
+model Integration {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String          @db.ObjectId
+  type      IntegrationType
+  apiKey    String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum IntegrationType {
+  WHATSAPP
+  TELEGRAM
+  CUSTOM_API
+}
+
+model Datasource {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  type        DatasourceType // "document" | "web" | "database" | "text"
+  category    String?
+  content     String?
+  description String?
+  url         String? // Untuk sumber dari web
+  size        Int? // Ukuran dalam bytes/kilobytes/megabytes
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  agents      AgentOnDatasource[]
+}
+
+model AgentOnDatasource {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  agentId      String   @db.ObjectId
+  datasourceId String   @db.ObjectId
+  assignedAt   DateTime @default(now())
+
+  agent      Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  datasource Datasource @relation(fields: [datasourceId], references: [id], onDelete: Cascade)
+}
+
+enum DatasourceType {
+  DATABASE
+  DOCUMENT
+  TEXT
+  WEB
+}

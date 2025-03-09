@@ -4,6 +4,7 @@ export function getLLM() {
   const llm = new ChatGroq({
     model: 'llama-3.3-70b-versatile',
     temperature: 0,
+    maxTokens: 200,
   });
 
   return llm;
