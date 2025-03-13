@@ -52,6 +52,9 @@ export async function loadChatModel(
   } else {
     const provider = fullySpecifiedName.slice(0, index);
     const model = fullySpecifiedName.slice(index + 1);
-    return await initChatModel(model, { modelProvider: provider });
+    return await initChatModel(model, {
+      modelProvider: provider,
+      maxTokens: 2000,
+    });
   }
 }

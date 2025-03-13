@@ -11,6 +11,7 @@ import { getAgentById } from '../../services/agent';
 import {
   createConversation,
   getConversationById,
+  updateConversationById,
 } from '../../services/conversation';
 import { createMessage } from '../../services/messages';
 import { AppError } from '../../utils/appError';
@@ -20,19 +21,33 @@ import {
   RESPONSE_SYSTEM_PROMPT_TEMPLATE,
 } from '../../utils/mygraph/cs_graph/prompt';
 
+type MessageEvent = {
+  eventData: Record<string, any>;
+  eventType: 'messages' | 'values';
+  res: Response;
+};
+
+const createNewMessageValidator = z.object({
+  messages: z.array(
+    z.object({ role: z.enum(['human', 'ai']), content: z.string().min(1) })
+  ),
+  userId: z.string().min(1),
+  agentId: z.string().min(1),
+  conversationId: z.string().min(1).optional(),
+});
+
 const createNewMessage = asyncHandler(async (req, res) => {
   const data = createNewMessageValidator.parse(req.body);
-
   const agent = await getAgentById(data.agentId);
   if (!agent) {
     throw AppError.notFound('Agent not found');
   }
 
-  const messages = data.messages.map((message) => {
-    return message.role === 'ai'
+  const messages = data.messages.map((message) =>
+    message.role === 'ai'
       ? new AIMessage({ content: message.content })
-      : new HumanMessage({ content: message.content });
-  });
+      : new HumanMessage({ content: message.content })
+  );
 
   const stream = await graph.stream(
     { messages },
@@ -51,6 +66,7 @@ const createNewMessage = asyncHandler(async (req, res) => {
       streamMode: ['messages', 'values'],
     }
   );
+
   await processStream(stream, res, data, agent);
 });
 
@@ -64,21 +80,20 @@ async function processStream(
   let accumulatedContent = '';
   let filteredData: Record<string, string> = {};
   let messagesToStore: CreateMessage[] = [];
+  const conversation = await getOrCreateConversation(data, agent);
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.write('event: start\n');
+  setupResponseHeaders(res);
+
+  res.write(
+    `\ndata: {"event":"conversationId","data":{"conversationId":"${conversation.id}"}}\n\n`
+  );
 
   for await (const chunk of stream) {
     try {
       const [eventType, eventData] = chunk;
-
       if (eventType === 'messages') {
         accumulatedContent += handleMessageEvent({ eventData, eventType, res });
-      }
-
-      if (eventType === 'values') {
+      } else if (eventType === 'values') {
         filteredData = handleValueEvent({ eventData, eventType, res });
       }
     } catch (error: any) {
@@ -87,54 +102,84 @@ async function processStream(
     }
   }
 
-  if (errors.length > 0) {
-    res.write(`data: ${JSON.stringify({ event: 'errors', errors })}\n\n`);
-  }
-
-  res.write('event: end\n');
-  res.end();
+  finalizeResponse(res, errors);
 
   if (accumulatedContent.trim()) {
-    let conversation = await getConversationById(data.conversationId);
-
-    if (!conversation) {
-      conversation = await createConversation({
-        agentId: agent.id,
-        userId: data.userId,
-        status: 'active',
-        category: 'question',
-        priority: filteredData.priority as 'low' | 'medium' | 'high',
-      });
-    }
-
-    messagesToStore = [
-      {
-        role: 'human',
-        content: data.messages[data.messages.length - 1].content,
-        conversationId: conversation.id,
-      },
-      {
-        role: 'ai',
-        content: filteredData.content,
-        conversationId: conversation.id,
-      },
-    ];
-
-    // await Promise.all(
-    //   messagesToStore.map(async (message) => {
-    //     await createMessage(message);
-    //   })
-    // );
-    for (const message of messagesToStore) {
-      await createMessage(message);
-    }
+    await updateConversation(conversation.id, filteredData);
+    messagesToStore = createMessagesToStore(
+      data,
+      filteredData,
+      conversation.id
+    );
+    await storeMessages(messagesToStore);
   }
 }
 
-type MessageEvent = {
-  eventData: Record<string, any>;
-  eventType: 'messages' | 'values';
-  res: Response;
+function setupResponseHeaders(res: Response) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.write('event: start\n');
+}
+
+function finalizeResponse(res: Response, errors: string[]) {
+  if (errors.length > 0) {
+    res.write(`data: ${JSON.stringify({ event: 'errors', errors })}\n\n`);
+  }
+  res.write('event: end\n');
+  res.end();
+}
+
+function createMessagesToStore(
+  data: z.infer<typeof createNewMessageValidator>,
+  filteredData: Record<string, string>,
+  conversationId: string
+): CreateMessage[] {
+  return [
+    {
+      role: 'human',
+      content: data.messages[data.messages.length - 1].content,
+      conversationId,
+    },
+    {
+      role: 'ai',
+      content: filteredData.content,
+      conversationId,
+    },
+  ];
+}
+
+async function storeMessages(messages: CreateMessage[]) {
+  for (const message of messages) {
+    await createMessage(message);
+  }
+}
+
+const getOrCreateConversation = async (
+  data: z.infer<typeof createNewMessageValidator>,
+  agent: Agent
+) => {
+  if (data.conversationId) {
+    const conversation = await getConversationById(data.conversationId);
+    if (conversation) return conversation;
+  }
+
+  return await createConversation({
+    agentId: agent.id,
+    userId: data.userId,
+    status: 'active',
+    category: 'question',
+    priority: 'low', // default priority
+  });
+};
+
+const updateConversation = async (
+  conversationId: string,
+  filteredData: Record<string, string>
+) => {
+  return await updateConversationById(conversationId, {
+    priority: filteredData.priority as 'low' | 'medium' | 'high',
+  });
 };
 
 function handleMessageEvent({
@@ -182,15 +227,6 @@ function handleValueEvent({ eventData, eventType, res }: MessageEvent) {
   res.write(`data: ${formattedData}\n\n`);
   return filteredData;
 }
-
-const createNewMessageValidator = z.object({
-  messages: z.array(
-    z.object({ role: z.enum(['human', 'ai']), content: z.string().min(1) })
-  ),
-  userId: z.string().min(1),
-  agentId: z.string().min(1),
-  conversationId: z.string().min(1).optional(),
-});
 
 export const chatController = {
   createNewMessage,

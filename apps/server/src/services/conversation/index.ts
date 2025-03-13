@@ -1,5 +1,9 @@
 import { db } from '../../configs/database';
-import { CreateConversation } from '../../types/interface/conversation';
+import {
+  CreateConversation,
+  UpdateConversation,
+} from '../../types/interface/conversation';
+import { AppError } from '../../utils/appError';
 
 export const createConversation = async (data: CreateConversation) => {
   try {
@@ -24,6 +28,25 @@ export const createConversation = async (data: CreateConversation) => {
   }
 };
 
+export const updateConversationById = async (
+  conversationId: string,
+  data: UpdateConversation
+) => {
+  try {
+    const updatedConversation = await db.conversation.update({
+      where: {
+        id: conversationId,
+      },
+      data,
+    });
+
+    return updatedConversation;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getConversationById = async (conversationId?: string) => {
   try {
     const conversation = await db.conversation.findFirst({
@@ -40,5 +63,47 @@ export const getConversationById = async (conversationId?: string) => {
   } catch (error) {
     console.error(error);
     throw error;
+  }
+};
+
+export const getAllConversations = async () => {
+  try {
+    const conversations = await db.conversation.findMany({
+      include: {
+        messages: {
+          take: 1,
+        },
+        user: true,
+      },
+    });
+
+    return conversations;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const deleteConversationById = async (conversationId: string) => {
+  try {
+    const isConversationExits = await getConversationById(conversationId);
+
+    if (!isConversationExits) {
+      throw AppError.notFound('Conversation not found');
+    }
+
+    const deletedConversation = await db.conversation.delete({
+      where: {
+        id: conversationId,
+      },
+    });
+
+    return deletedConversation;
+  } catch (error) {
+    console.error(error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new Error('Failed to delete conversation');
   }
 };

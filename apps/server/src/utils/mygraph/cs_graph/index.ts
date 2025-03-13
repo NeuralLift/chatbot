@@ -95,7 +95,7 @@ async function generateCustomerQuery(
   const model = (
     await loadChatModel(configuration.queryModel)
   ).withStructuredOutput(searchQuery);
-  const prompt = `Generate a search query to help answer the user's question. If not related to questions, leave it query: null.
+  const prompt = `Generate a search query to help answer the user's question. If not related to questions, leave it {query: null}.
 message: ${messages[messages.length - 1].content}`;
   const response = await model.invoke(prompt);
   // const humanInput = getMessageText(messages[messages.length - 1]);
