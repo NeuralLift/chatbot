@@ -8,13 +8,7 @@ import { AppError } from '../../utils/appError';
 export const createConversation = async (data: CreateConversation) => {
   try {
     const newConversation = await db.conversation.create({
-      data: {
-        agentId: data.agentId,
-        userId: data.userId,
-        priority: data.priority,
-        category: data.category,
-        status: data.status,
-      },
+      data,
       include: {
         messages: true,
         user: true,
@@ -52,6 +46,25 @@ export const getConversationById = async (conversationId?: string) => {
     const conversation = await db.conversation.findFirst({
       where: {
         id: conversationId,
+      },
+      include: {
+        messages: true,
+        user: true,
+      },
+    });
+
+    return conversation;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getConversationByChatId = async (chatId: number) => {
+  try {
+    const conversation = await db.conversation.findFirst({
+      where: {
+        chatId,
       },
       include: {
         messages: true,

@@ -14,6 +14,9 @@ const Textarea = React.forwardRef<
       )}
       ref={ref}
       {...props}
+      style={{
+        scrollbarGutter: 'stable',
+      }}
     />
   );
 });

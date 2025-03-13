@@ -47,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useAgentStore } from '@/hooks/useAgent';
 // import { Label } from '@/components/ui/label';
 // import {
 //   Select,
@@ -103,6 +104,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
     useAgentModalStore();
   const { setAgent: setDeleteAgent, handleOpen: handleDeleteOpen } =
     useDeleteAgentModalStore();
+  const { setAgent } = useAgentStore();
 
   const handleClickDetailsAgent = () => {
     setDetailsAgent(agent);
@@ -117,6 +119,10 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
   const handleDeleteAgent = () => {
     setDeleteAgent(agent);
     handleDeleteOpen();
+  };
+
+  const handleClickPreview = () => {
+    setAgent(agent.id);
   };
 
   return (
@@ -168,7 +174,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/chat">
+                <Link to="/chat" onClick={() => handleClickPreview()}>
                   <Eye className="mr-2 h-4 w-4" />
                   Preview
                 </Link>

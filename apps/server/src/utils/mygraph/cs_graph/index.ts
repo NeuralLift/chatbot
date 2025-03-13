@@ -1,3 +1,4 @@
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { END, START, StateGraph } from '@langchain/langgraph';
 import { z } from 'zod';
@@ -66,7 +67,7 @@ async function generateSummaryConversation(
   state: typeof StateAnnotation.State,
   config?: RunnableConfig
 ): Promise<typeof StateAnnotation.Update> {
-  const messages = state.messages;
+  const messages = state.messages.slice(-9, -1);
 
   const prompt = `Summarize the following customer support conversation and determine its priority (low, medium, high):
 
@@ -124,13 +125,15 @@ async function respondToCustomer(
 
   const retrievedDocs = formatDocs(state.retrievedDocs);
   const systemMessage = configuration.responseSystemPromptTemplate
-    .replace('{summary_conversation}', state.summary_conversation)
-    .replace('{retrievedDocs}', retrievedDocs)
+    // .replace('{summary_conversation}', state.summary_conversation)
+    // .replace('{retrievedDocs}', retrievedDocs)
     .replace('{systemTime}', new Date().toISOString());
 
   const messageValue = [
-    { role: 'system', content: systemMessage },
-    ...state.messages,
+    new SystemMessage(systemMessage),
+    new SystemMessage(state.summary_conversation),
+    new SystemMessage(retrievedDocs),
+    new HumanMessage(state.messages[state.messages.length - 1]),
   ];
   const response = await model.invoke(messageValue);
 

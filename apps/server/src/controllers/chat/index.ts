@@ -7,13 +7,15 @@ import z from 'zod';
 import type { CreateMessage } from '../../types/interface/message';
 import type { Agent } from '@prisma/client';
 import { asyncHandler } from '../../middleware/async';
-import { getAgentById } from '../../services/agent';
+import { getAgentById, updateAgentById } from '../../services/agent';
 import {
   createConversation,
+  getConversationByChatId,
   getConversationById,
   updateConversationById,
 } from '../../services/conversation';
 import { createMessage } from '../../services/messages';
+import { UpdateAgent } from '../../types/interface/agent';
 import { AppError } from '../../utils/appError';
 import { graph } from '../../utils/mygraph/cs_graph';
 import {
@@ -33,6 +35,7 @@ const createNewMessageValidator = z.object({
   ),
   userId: z.string().min(1),
   agentId: z.string().min(1),
+  chatId: z.number().min(1).optional().describe('Telegram chat id'),
   conversationId: z.string().min(1).optional(),
 });
 
@@ -112,6 +115,9 @@ async function processStream(
       conversation.id
     );
     await storeMessages(messagesToStore);
+    await updateAgent(agent.id, {
+      lastActive: new Date().toISOString(),
+    });
   }
 }
 
@@ -162,11 +168,15 @@ const getOrCreateConversation = async (
   if (data.conversationId) {
     const conversation = await getConversationById(data.conversationId);
     if (conversation) return conversation;
+  } else if (data.chatId) {
+    const conversation = await getConversationByChatId(data.chatId);
+    if (conversation) return conversation;
   }
 
   return await createConversation({
     agentId: agent.id,
     userId: data.userId,
+    chatId: data.chatId,
     status: 'active',
     category: 'question',
     priority: 'low', // default priority
@@ -180,6 +190,10 @@ const updateConversation = async (
   return await updateConversationById(conversationId, {
     priority: filteredData.priority as 'low' | 'medium' | 'high',
   });
+};
+
+const updateAgent: UpdateAgent = async (agentId, data) => {
+  return await updateAgentById(agentId, data);
 };
 
 function handleMessageEvent({

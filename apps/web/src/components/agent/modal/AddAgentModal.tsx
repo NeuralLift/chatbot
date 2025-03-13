@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Expand, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { FormLabelWithTooltip } from '@/components/FormLabelWithTooltip';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -184,8 +192,6 @@ function AddAgentContent() {
                               (d) => d.id === id
                             );
 
-                            console.log(datasource);
-
                             return {
                               label: datasource?.name,
                               value: id,
@@ -279,6 +285,31 @@ function AddAgentContent() {
                   label="System Prompt"
                   name="System Prompt it is used to provide the agent with some initial instructions or context for the conversation."
                 />
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="circle" className="ml-2">
+                      <Expand />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="custom-scrollbar max-h-screen max-w-2xl overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>System Prompt</DialogTitle>
+                      <DialogDescription>
+                        System Prompt it is used to provide the agent with some
+                        initial instructions or context for the conversation.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="You are a helpful assistant."
+                        className="h-96"
+                      />
+                    </FormControl>
+                  </DialogContent>
+                </Dialog>
+
                 <FormControl>
                   <Textarea
                     {...field}

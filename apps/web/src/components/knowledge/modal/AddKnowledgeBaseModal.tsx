@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Book,
   Database,
+  Expand,
   File,
   FileText,
   Globe,
@@ -15,6 +16,14 @@ import { toast } from 'sonner';
 
 import { FormLabelWithTooltip } from '@/components/FormLabelWithTooltip';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -407,14 +416,6 @@ function AddKnowledgeBaseContent() {
           )}
 
           {sourceType === 'TEXT' && (
-            // <div className="grid gap-2">
-            //   <Label htmlFor="content">Text Content</Label>
-            //   <Textarea
-            //     id="content"
-            //     placeholder="Enter text content"
-            //     className="min-h-[150px]"
-            //   />
-            // </div>
             <FormField
               name="content"
               render={({ field }) => (
@@ -423,6 +424,30 @@ function AddKnowledgeBaseContent() {
                     label="Text"
                     name="Content your data source in text format"
                   />
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="circle" className="ml-2">
+                        <Expand />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="custom-scrollbar max-h-screen max-w-2xl overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Content</DialogTitle>
+                        <DialogDescription>
+                          Content your data source in text format
+                        </DialogDescription>
+                      </DialogHeader>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Hello my name is John Doe, i am 25 years old, and i live in New York City. I am a Software Engineer in Meta, currently focusing on bug fixing."
+                          className="h-96"
+                        />
+                      </FormControl>
+                    </DialogContent>
+                  </Dialog>
+
                   <FormControl>
                     <Textarea
                       {...field}

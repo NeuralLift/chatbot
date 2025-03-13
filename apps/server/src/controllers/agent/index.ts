@@ -97,6 +97,7 @@ const updateAgentSchema = z.object({
     })
     .optional(),
   prompt_variables: z.record(z.string()).optional(),
+  lastActive: z.string().optional(),
 });
 
 const agentIdSchema = z.object({

@@ -37,6 +37,7 @@ export interface UpdateAgent {
       user_prompt?: string;
       prompt_variables?: Record<string, string>;
       datasourceIds?: string[];
+      lastActive?: string;
     }
   ): Promise<Agent | null>;
 }

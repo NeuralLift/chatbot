@@ -1,4 +1,8 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, LucideProps } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { BadgeStatus } from '@/components/knowledge/BadgeStatus';
 import { Button } from '@/components/ui/button';
@@ -9,6 +13,37 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useAgentStore } from '@/hooks/useAgent';
+import { API } from '@/lib/api';
+import {
+  createTelegramIntegration,
+  CreateTelegramIntegration,
+} from '@/lib/schema/integration';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import { useCreateIntegrationMutation } from './useCreateIntegrationMutation';
 
 const TelegramLogo = (props?: LucideProps) => {
   return (
@@ -90,7 +125,7 @@ const integrations = [
     name: 'Whatsapp',
     description: 'Send and receive messages directly from WhatsApp',
     icon: WhatsappLogo,
-    status: 'active' as const,
+    status: 'inactive' as const,
     lastSync: '5 mins ago',
     category: 'Communication',
   },
@@ -137,6 +172,41 @@ const integrations = [
 ];
 
 export default function Integrations() {
+  const { mutate: createIntegrationMutation, isPending } =
+    useCreateIntegrationMutation();
+  const { agentId } = useAgentStore();
+
+  const { data: agentsData } = useQuery({
+    queryKey: ['agents'],
+    queryFn: API.agent.getAllAgents,
+    refetchOnWindowFocus: false,
+  });
+
+  const form = useForm<CreateTelegramIntegration>({
+    resolver: zodResolver(createTelegramIntegration),
+    defaultValues: {
+      token: window.localStorage.getItem('telegram_token') || '',
+      userId: 'awd',
+      agentId: agentId ?? agentsData?.[0]?.id,
+    },
+  });
+
+  const onSubmit = (data: CreateTelegramIntegration) => {
+    if (isPending) return;
+
+    window.localStorage.setItem('telegram_token', data.token);
+
+    createIntegrationMutation(data, {
+      onSuccess: () => {
+        toast.success('Success Initializing Telegram Integration');
+      },
+      onError: (error) => {
+        console.error(error);
+        toast.error(error.message);
+      },
+    });
+  };
+
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {integrations.map((integration) => (
@@ -165,10 +235,79 @@ export default function Integrations() {
               <div className="text-muted-foreground text-sm">
                 Last sync: {integration.lastSync}
               </div>
-              <Button variant="ghost" size="sm">
-                Configure
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={integration.name == 'Whatsapp'}>
+                    Configure
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Configure {integration.name}</DialogTitle>
+                    <DialogDescription>
+                      Manage your {integration.name} integration
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4">
+                      <FormField
+                        name="token"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="Telegram Bot Token"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        name="agentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                defaultValue={field.value}
+                                onValueChange={(v) => {
+                                  field.onChange(v);
+                                }}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select Agent" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {agentsData?.map((agent) => (
+                                    <SelectItem key={agent.id} value={agent.id}>
+                                      {agent.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <DialogFooter>
+                        <Button disabled={isPending} type="submit">
+                          {isPending ? 'Initializing...' : 'Save changes'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>

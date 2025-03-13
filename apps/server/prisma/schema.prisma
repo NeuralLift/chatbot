@@ -57,6 +57,7 @@ model Conversation {
   id        String       @id @default(auto()) @map("_id") @db.ObjectId
   userId    String       @db.ObjectId
   agentId   String       @db.ObjectId
+  chatId    Int? // telegram chat id
   messages  Message[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt

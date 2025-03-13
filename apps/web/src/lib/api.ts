@@ -10,6 +10,7 @@ import {
   CreateNewMessageParams,
   DeleteConversationParams,
 } from './schema/chat';
+import { CreateTelegramIntegration } from './schema/integration';
 import {
   CreateNewDatasourceParams,
   UpdateDatasourceParams,
@@ -112,6 +113,18 @@ export class API {
     editDatasource: async (data: UpdateDatasourceParams) =>
       await fetcher(`/api/datasource/${data.datasourceId}`, {
         method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+  };
+
+  /**
+   * Integration related API endpoints.
+   * @namespace
+   * */
+  static integration = {
+    createTelegramIntegration: async (data: CreateTelegramIntegration) =>
+      await fetcher('/api/integration/telegram', {
+        method: 'POST',
         body: JSON.stringify(data),
       }),
   };

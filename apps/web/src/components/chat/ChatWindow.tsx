@@ -13,12 +13,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAgentStore } from '@/hooks/useAgent';
 import { useChatStore } from '@/hooks/useChat';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { API } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Message } from '@/types/interface/chat';
 import { Attachments } from './Attachments';
+import Preferences from './Preferences';
 
 interface ChatWindowProps {
   position: 'center' | 'bottom';
@@ -35,6 +37,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const inputFileRef = useRef<HTMLInputElement>(null);
   const containerMaxHeight = 0;
   const { messages, setMessages } = useChatStore();
+  const { agentId } = useAgentStore();
   const { attachments, isUploading, startUpload, removeAttachment } =
     useMediaUpload();
   const [isPending, setIsPending] = useState(false);
@@ -91,13 +94,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       const res = await API.chat.createNewMessage({
         messages: [...messages.slice(-3), userMessage],
         conversationId: conversationId!,
-        agentId: '67c95d71b9e60b5fb996b962',
+        agentId,
         userId: '67c698efbe3f97543f604516',
       });
 
       if (!res.ok) {
-        const { message } = await res.json();
-        throw new Error(message);
+        const data = await res.json();
+
+        const errors = data.errors as Array<{ field: string; message: string }>;
+
+        if (errors.length > 0 && errors[0].field === 'agentId') {
+          throw new Error('Please select an agent in settings');
+        }
+
+        throw new Error(data.errorCode + ': ' + data.message);
       }
 
       const reader = res.body?.getReader();
@@ -164,7 +174,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         updateAIMessage(aiMessageId, jsonData.data?.content ?? '');
         break;
       case 'values':
-        console.log(jsonData);
         break;
       case 'conversationId':
         if (!conversationData?.id && jsonData.data?.conversationId) {
@@ -274,6 +283,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 name="file"
               />
               <UploadFileButton inputRef={inputFileRef} />
+              <Preferences />
 
               {attachments.length > 0 && (
                 <Attachments
