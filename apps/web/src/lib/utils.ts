@@ -8,11 +8,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Fetches data from the given URL with the specified options.
+ *
+ * @param url - The URL to fetch data from.
+ * @param options - Optional fetch options to customize the request.
+ * @returns A promise that resolves to the response data.
+ * @throws Will throw an error if the response contains an error.
+ */
+
 export const fetcher: Fetcher = (url, options) =>
   fetch(url, {
     ...options,
     headers: { 'Content-Type': 'application/json' },
-  }).then((r) => r.json());
+  }).then(async (r) => {
+    const data = await r.json();
+
+    // Check if there is an error
+    if (data.error) {
+      throw new Error(data.errorCode + ': ' + data.message);
+    }
+
+    return data;
+  });
 
 export function formatRelativeDate(dateString: string) {
   const date = new Date(dateString);

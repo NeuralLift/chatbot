@@ -24,7 +24,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+// const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '16rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
@@ -61,7 +61,8 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = false,
+      defaultOpen = window.localStorage.getItem(SIDEBAR_COOKIE_NAME) ===
+        'true' || false,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -88,17 +89,18 @@ const SidebarProvider = React.forwardRef<
         }
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        // document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
       [setOpenProp, open]
     );
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
+      window.localStorage.setItem(SIDEBAR_COOKIE_NAME, JSON.stringify(!open));
       return isMobile
         ? setOpenMobile((open) => !open)
         : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+    }, [isMobile, setOpen, setOpenMobile, open]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -654,23 +656,24 @@ const SidebarMenuSkeleton = React.forwardRef<
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
+    // return `${Math.floor(Math.random() * 40) + 50}%`;
+    return '100%';
   }, []);
 
   return (
     <div
       ref={ref}
       data-sidebar="menu-skeleton"
-      className={cn('flex h-8 items-center gap-2 rounded-md px-2', className)}
+      className={cn('flex h-10 items-center gap-2 rounded-md px-2', className)}
       {...props}>
       {showIcon && (
         <Skeleton
-          className="size-4 rounded-md"
+          className="size-8 rounded-md"
           data-sidebar="menu-skeleton-icon"
         />
       )}
       <Skeleton
-        className="h-4 max-w-[--skeleton-width] flex-1"
+        className="h-10 max-w-[--skeleton-width] flex-1"
         data-sidebar="menu-skeleton-text"
         style={
           {

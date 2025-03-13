@@ -6,7 +6,10 @@ import {
   DeleteAgentParams,
   UpdateAgentParams,
 } from './schema/agent';
-import { CreateNewMessageParams } from './schema/chat';
+import {
+  CreateNewMessageParams,
+  DeleteConversationParams,
+} from './schema/chat';
 import {
   CreateNewDatasourceParams,
   UpdateDatasourceParams,
@@ -35,6 +38,14 @@ export class API {
       await fetcher<Conversation>(`/api/conversation/${id}`).then(
         (r) => r.data
       ),
+
+    getAllConversations: async () =>
+      await fetcher<Conversation[]>('/api/conversation').then((r) => r.data),
+
+    deleteConversation: async (data: DeleteConversationParams) =>
+      await fetcher(`/api/conversation/${data.conversationId}`, {
+        method: 'DELETE',
+      }),
   };
 
   /**

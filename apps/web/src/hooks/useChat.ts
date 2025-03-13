@@ -8,6 +8,7 @@ type ChatState = {
 
   // setQuestion: (question: string) => void;
   setMessages: (updater: Message | ((prev: Message[]) => Message[])) => void;
+  resetMessages: () => void;
 };
 
 export const useChatStore = create<ChatState>()((set) => ({
@@ -21,6 +22,7 @@ export const useChatStore = create<ChatState>()((set) => ({
           ? updater(state.messages)
           : [...state.messages, updater],
     })),
+  resetMessages: () => set({ messages: [] }),
 
   // setQuestion: (question) => set({ question }),
 }));

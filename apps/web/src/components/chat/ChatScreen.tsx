@@ -1,16 +1,50 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Markdown from 'react-markdown';
+import { useParams } from 'react-router';
 
+import AiThinking from '@/components/AiThinking';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useChatStore } from '@/hooks/useChat';
+import { API } from '@/lib/api';
 
 const MemoMarkdown = React.memo(Markdown);
 
 export function ChatScreen() {
-  const { messages } = useChatStore();
+  const { messages, setMessages } = useChatStore();
+  const { conversationId } = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
+  const {
+    data: conversationData,
+    error,
+    isError,
+  } = useQuery({
+    queryFn: () => API.conversation.getConversationId(conversationId!),
+    queryKey: ['conversation', conversationId],
+    refetchOnWindowFocus: false,
+    enabled: !!conversationId,
+  });
+
+  useEffect(() => {
+    if (conversationData?.messages) {
+      setMessages((prev) => {
+        const newMessages = conversationData.messages ?? [];
+        const existingMessageIds = new Set(prev.map((msg) => msg.id));
+        const filteredNewMessages = newMessages.filter(
+          (msg) => !existingMessageIds.has(msg.id)
+        );
+
+        // Only update state if there are new messages to add
+        if (filteredNewMessages.length > 0) {
+          return [...prev, ...filteredNewMessages];
+        }
+        return prev;
+      });
+    }
+  }, [conversationData?.messages, setMessages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,7 +70,9 @@ export function ChatScreen() {
       ref={scrollContainerRef}
       onScroll={handleScroll}
       className="custom-scrollbar flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      {isError && <div>{error.message}</div>}
+
+      <div className="mx-auto w-full max-w-3xl px-4 pt-4">
         {messages.map(({ id, role, content }) => {
           const isUser = role === 'human';
           return (
@@ -69,10 +105,16 @@ export function ChatScreen() {
                   </svg>
                 </div>
               )}
-              <div
-                className={`prose dark:prose-invert max-w-none overflow-auto rounded-lg px-4 py-2 shadow-md ${isUser ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
-                <MemoMarkdown>{content}</MemoMarkdown>
-              </div>
+
+              {/* AI Thinking loading */}
+              {!isUser && content.trim() === '' ? (
+                <AiThinking />
+              ) : (
+                <div
+                  className={`prose dark:prose-invert max-w-none overflow-auto rounded-lg px-4 py-2 shadow-md ${isUser ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
+                  <MemoMarkdown>{content}</MemoMarkdown>
+                </div>
+              )}
             </div>
           );
         })}

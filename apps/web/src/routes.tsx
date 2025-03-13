@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
 
 import NotFound from '@/components/NotFound';
+import ChatLayout from '@/layout/ChatLayout';
 import DashboardLayout from '@/layout/DashboardLayout';
 import AgentsPage from '@/pages/Agents';
 import BuilderPage from '@/pages/Builder';
@@ -9,6 +10,7 @@ import ConversationsPage from '@/pages/Conversations';
 import HomePage from '@/pages/Home';
 import IntegrationsPage from '@/pages/Integrations';
 import KnowledgeBasePage from '@/pages/KnowledgeBase';
+import NewChatPage from '@/pages/NewChatPage';
 import OverviewPage from '@/pages/Overview';
 import SettingsPage from '@/pages/Settings';
 
@@ -19,7 +21,11 @@ export function AppRoutes() {
         <Route>
           {/* LANDING PAGE */}
           <Route index element={<HomePage />} />
-          <Route path="chat" element={<ChatPage />} />
+
+          <Route path="chat" element={<ChatLayout />}>
+            <Route index element={<NewChatPage />} />
+            <Route path=":conversationId" element={<ChatPage />} />
+          </Route>
         </Route>
 
         {/* AUTHENTICATION PAGE */}

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { toast } from 'sonner';
 
 export default function ReactQueryProvider({
   children,
@@ -15,10 +21,20 @@ export default function ReactQueryProvider({
             staleTime: 1000,
           },
         },
+        queryCache: new QueryCache({
+          onError: (error) => {
+            console.error(error);
+
+            toast.error(error.message);
+          },
+        }),
       })
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   );
 }

@@ -25,7 +25,7 @@ export const FormLabelWithTooltip = ({
           <TooltipTrigger asChild className="max-sm:hidden">
             <HelpCircle className="text-muted-foreground h-4 w-4" />
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent className="bg-primary text-background dark:bg-primary dark:text-background">
             <p>{name}</p>
           </TooltipContent>
         </Tooltip>

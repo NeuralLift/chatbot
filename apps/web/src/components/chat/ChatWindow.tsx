@@ -1,7 +1,8 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { memo, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from '@uploadthing/react';
 import { Loader2, Paperclip, Send } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { useChatStore } from '@/hooks/useChat';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { API } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { Message } from '@/types/interface/chat';
 import { Attachments } from './Attachments';
 
 interface ChatWindowProps {
@@ -28,6 +30,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   className,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { conversationId } = useParams();
+  const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const containerMaxHeight = 0;
   const { messages, setMessages } = useChatStore();
@@ -36,18 +40,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [isPending, setIsPending] = useState(false);
   const [question, setQuestion] = useState('');
 
-  const { data: conversationData } = useQuery({
-    queryFn: () =>
-      API.conversation.getConversationId('67c96e052adbf6d6b40b70dd'),
-    queryKey: ['conversation'],
-    refetchOnWindowFocus: false,
-  });
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (conversationData) {
-      setMessages((prev) => [...prev, ...(conversationData.messages ?? [])]);
-    }
-  }, [conversationData]);
+  const { data: conversationData } = useQuery({
+    queryFn: () => API.conversation.getConversationId(conversationId!),
+    queryKey: ['conversation', conversationId],
+    refetchOnWindowFocus: false,
+    enabled: !!conversationId,
+  });
 
   const { getInputProps, getRootProps } = useDropzone({
     onDrop: startUpload,
@@ -79,112 +79,124 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     e.preventDefault();
     setIsPending(true);
 
-    // Send user message first
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), content: question, role: 'human' },
-    ]);
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: question,
+      role: 'human',
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
 
     try {
       const res = await API.chat.createNewMessage({
-        messages: [
-          ...messages.slice(-1),
-          {
-            role: 'human',
-            content: question,
-          },
-        ],
+        messages: [...messages.slice(-3), userMessage],
+        conversationId: conversationId!,
         agentId: '67c95d71b9e60b5fb996b962',
         userId: '67c698efbe3f97543f604516',
       });
 
       if (!res.ok) {
-        const json = await res.json();
-        const message = json.message;
+        const { message } = await res.json();
         throw new Error(message);
       }
 
       const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = '';
+      if (!reader) throw new Error('No readable stream found');
 
-      // Create AI message placeholder first
       const aiMessageId = Date.now().toString();
       setMessages((prev) => [
         ...prev,
-        {
-          id: aiMessageId,
-          content: '',
-          role: 'ai',
-        },
+        { id: aiMessageId, content: '', role: 'ai' },
       ]);
 
-      while (reader) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        accumulatedText += decoder.decode(value, { stream: true });
-
-        const lines = accumulatedText.split('\n\n');
-        accumulatedText = lines.pop() || ''; // Keep incomplete data
-
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try {
-              const jsonData = JSON.parse(line.replace('data: ', ''));
-
-              // if (jsonData.event === 'messages' && Array.isArray(jsonData.data)) {
-              if (jsonData.event === 'messages') {
-                // Cari objek yang memiliki `id` termasuk 'AIMessageChunk'
-                // const aiMessage = jsonData.data.find((msg: { id: string[] }) =>
-                //   msg.id?.includes('AIMessageChunk')
-                // );
-                const data = jsonData.data;
-
-                // Ambil content dari kwargs jika ada
-                const content = data?.content ?? '';
-
-                if (content) {
-                  setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === aiMessageId
-                        ? { ...msg, content: msg.content + content }
-                        : msg
-                    )
-                  );
-                }
-              }
-            } catch (error) {
-              console.error('Error parsing JSON:', error);
-            }
-          } else if (line.startsWith('event: end')) {
-            console.log('Stream ended');
-            return;
-          }
-        }
-      }
+      await handleStreamResponse(reader, aiMessageId);
     } catch (error) {
       console.error(error);
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
+      if (error instanceof Error) toast.error(error.message);
     }
+
+    await queryClient.invalidateQueries({
+      queryKey: ['conversations'],
+    });
 
     setQuestion('');
     setIsPending(false);
   };
 
+  const handleStreamResponse = async (
+    reader: ReadableStreamDefaultReader,
+    aiMessageId: string
+  ) => {
+    const decoder = new TextDecoder();
+    let accumulatedText = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      accumulatedText += decoder.decode(value, { stream: true });
+      const lines = accumulatedText.split('\n\n');
+      accumulatedText = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          try {
+            const jsonData = JSON.parse(line.replace('data: ', ''));
+            handleStreamEvent(jsonData, aiMessageId);
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+          }
+        } else if (line.startsWith('event: end')) {
+          console.log('Stream ended');
+          return;
+        }
+      }
+    }
+  };
+
+  const handleStreamEvent = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jsonData: Record<string, any>,
+    aiMessageId: string
+  ) => {
+    switch (jsonData.event) {
+      case 'messages':
+        updateAIMessage(aiMessageId, jsonData.data?.content ?? '');
+        break;
+      case 'values':
+        console.log(jsonData);
+        break;
+      case 'conversationId':
+        if (!conversationData?.id && jsonData.data?.conversationId) {
+          navigate(`/chat/${jsonData.data.conversationId}`);
+        }
+        break;
+    }
+  };
+
+  const updateAIMessage = (aiMessageId: string, content: string) => {
+    if (!content) return;
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === aiMessageId
+          ? { ...msg, content: msg.content + content }
+          : msg
+      )
+    );
+  };
+
   return (
     <>
       {/* CENTER INPUT */}
-      <form
+      {/* <form
         onSubmit={onSubmit}
         hidden={position === 'bottom'}
         className="w-full">
         <div
           {...rootProps}
           className={cn(
-            'bg-background flex max-h-56 w-full flex-col gap-2 rounded-lg border p-2 shadow-md max-lg:hidden',
+            'bg-background flex max-h-52 w-full flex-col gap-2 rounded-3xl border p-2 shadow-md max-lg:hidden',
             className
           )}>
           <Textarea
@@ -227,7 +239,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </div>
           </div>
         </div>
-      </form>
+      </form> */}
 
       {/* BOTTOM INPUT */}
       <form
@@ -237,7 +249,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <div
           {...rootProps}
           className={cn(
-            'bg-background flex max-h-56 w-full max-w-3xl flex-col gap-2 rounded-lg border p-2 shadow-md',
+            'bg-background flex max-h-52 w-full max-w-3xl flex-col gap-2 rounded-3xl border p-2 shadow-md',
             className
           )}>
           <Textarea
@@ -319,31 +331,29 @@ const UploadFileButton: React.FC<UploadButtonProps> = memo(({ inputRef }) => {
 
 UploadFileButton.displayName = 'UploadFileButton';
 
-const SendMessageButton: React.FC<SendButtonProps> = ({
-  isPending,
-  isUploading,
-  question,
-}) => {
-  return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            disabled={isPending || isUploading || !question.trim()}
-            type="submit"
-            size="circle"
-            variant="default">
-            {isPending ? <Loader2 className="animate-spin" /> : <Send />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent
-          className="bg-primary text-background dark:bg-primary dark:text-background"
-          side="bottom">
-          <p>Send messages</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
+const SendMessageButton: React.FC<SendButtonProps> = memo(
+  ({ isPending, isUploading, question }) => {
+    return (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              disabled={isPending || isUploading || !question.trim()}
+              type="submit"
+              size="circle"
+              variant="default">
+              {isPending ? <Loader2 className="animate-spin" /> : <Send />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            className="bg-primary text-background dark:bg-primary dark:text-background"
+            side="bottom">
+            <p>Send messages</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+);
 
 SendMessageButton.displayName = 'SendMessageButton';
