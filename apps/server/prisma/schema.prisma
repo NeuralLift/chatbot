@@ -110,6 +110,7 @@ model Datasource {
   description String?
   url         String? // Untuk sumber dari web
   size        Int? // Ukuran dalam bytes/kilobytes/megabytes
+  fileUrl     String?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   agents      AgentOnDatasource[]

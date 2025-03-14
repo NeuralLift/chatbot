@@ -148,6 +148,7 @@ function AddKnowledgeBaseContent() {
       size: source?.size ?? 0,
       type: (source?.type as 'DOCUMENT') ?? 'DOCUMENT',
       url: source?.url ?? '',
+      fileUrl: source?.fileUrl ?? '',
     },
   });
 

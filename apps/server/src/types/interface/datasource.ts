@@ -26,6 +26,7 @@ export interface UpdateDataSource {
       content?: string | null; // Content of the datasource
       url?: string | null; // URL of the datasource ex: https://docs.example.com
       size?: number | null; // Size of the datasource in bytes ex: 10MB
+      fileUrl?: string | null;
     }
   ): Promise<Datasource>;
 }

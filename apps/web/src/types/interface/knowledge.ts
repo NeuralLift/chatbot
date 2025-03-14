@@ -19,6 +19,7 @@ export interface KnowledgeSource {
   content?: string;
   description: string;
   url?: string;
+  fileUrl?: string;
   size: number;
   agentId: string;
   datasourceId: string;
