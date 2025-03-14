@@ -141,14 +141,15 @@ export default function ChatSidebar() {
                             <Link
                               to={conversation.id}
                               aria-current="page"
-                              className="max-w-[calc(100%-0.75rem)]"
                               onClick={() => {
                                 handleBeforeNavigateConversation(
                                   conversation.id
                                 );
                               }}>
                               <MessageSquare />
-                              <span>{content}</span>
+                              <span className="max-w-[calc(100%-0.75rem)]">
+                                {content}
+                              </span>
                             </Link>
                           </SidebarMenuButton>
                           <DropdownMenuWithMenuAction
