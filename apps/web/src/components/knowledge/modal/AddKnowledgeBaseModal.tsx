@@ -147,10 +147,12 @@ function AddKnowledgeBaseContent() {
       description: source?.description ?? '',
       size: source?.size ?? 0,
       type: (source?.type as 'DOCUMENT') ?? 'DOCUMENT',
-      url: source?.url ?? '',
-      fileUrl: source?.fileUrl ?? '',
+      url: source?.url ?? undefined,
+      fileUrl: source?.fileUrl ?? undefined,
     },
   });
+
+  console.log(form.formState.errors);
 
   useEffect(() => {
     if (source) {

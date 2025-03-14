@@ -710,7 +710,7 @@ export function AgentList({ agents }: AgentListProps) {
         <div className="relative max-w-lg flex-1">
           <Search className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
           <Input
-            placeholder="Search knowledge sources..."
+            placeholder="Search agents..."
             className="w-full pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

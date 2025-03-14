@@ -4,7 +4,6 @@ import { ExternalLink, LucideProps } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { BadgeStatus } from '@/components/knowledge/BadgeStatus';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -36,6 +35,8 @@ import {
   createTelegramIntegration,
   CreateTelegramIntegration,
 } from '@/lib/schema/integration';
+import { cn } from '@/lib/utils';
+import { FormLabelWithTooltip } from '../FormLabelWithTooltip';
 import {
   Select,
   SelectContent,
@@ -214,17 +215,28 @@ export default function Integrations() {
           key={integration.name}
           className="hover:bg-muted/50 transition-colors">
           <CardHeader>
-            <div className="max-xs:flex-col flex items-center justify-between">
+            <div className="flex gap-1">
               <div className="flex items-center space-x-4">
-                <div className="bg-background rounded-lg border p-2">
-                  <integration.icon className="size-10" />
+                <div className="bg-background relative rounded-lg border p-2">
+                  <integration.icon
+                    className={cn('size-10', {
+                      grayscale: integration.name === 'Whatsapp',
+                    })}
+                  />
+                  <div
+                    className={cn(
+                      'border-background absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2',
+                      integration.status === 'active'
+                        ? 'bg-green-500'
+                        : 'bg-red-500'
+                    )}
+                  />
                 </div>
                 <div>
                   <CardTitle>{integration.name}</CardTitle>
                   <CardDescription>{integration.category}</CardDescription>
                 </div>
               </div>
-              <BadgeStatus status={integration.status} />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -261,6 +273,10 @@ export default function Integrations() {
                         name="token"
                         render={({ field }) => (
                           <FormItem>
+                            <FormLabelWithTooltip
+                              label="Token"
+                              name="Your Telegram token"
+                            />
                             <FormControl>
                               <Input
                                 placeholder="Telegram Bot Token"
@@ -276,6 +292,10 @@ export default function Integrations() {
                         name="agentId"
                         render={({ field }) => (
                           <FormItem>
+                            <FormLabelWithTooltip
+                              label="Agent"
+                              name="The agent to use for this integration"
+                            />
                             <FormControl>
                               <Select
                                 defaultValue={field.value}

@@ -2,10 +2,15 @@ import { cn } from '@/lib/utils';
 
 interface BadgeStatusProps {
   status: 'active' | 'inactive' | 'pending' | 'training';
+  showText?: boolean;
   className?: string;
 }
 
-export function BadgeStatus({ status, className }: BadgeStatusProps) {
+export function BadgeStatus({
+  status,
+  showText = true,
+  className,
+}: BadgeStatusProps) {
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div
@@ -21,7 +26,7 @@ export function BadgeStatus({ status, className }: BadgeStatusProps) {
           'text-yellow-600': status === 'pending',
           'text-red-600': status === 'inactive',
         })}>
-        {status}
+        {showText && status}
       </span>
     </div>
   );

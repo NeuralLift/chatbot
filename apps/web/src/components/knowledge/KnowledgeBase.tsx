@@ -33,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatFileSize, formatRelativeDate } from '@/lib/utils';
 import { KnowledgeSource } from '@/types/interface/knowledge';
 import { BadgeStatus } from './BadgeStatus';
+import { useDeleteKnowledgeModalStore } from './modal/useDeleteKnowledgeModal';
 import { useKnowledgeModalStore } from './modal/useKnowledgeModal';
 
 type KnowledgeBaseProps = {
@@ -54,11 +55,19 @@ const KnowledgeBaseCard = ({
   source: KnowledgeSource;
   Icon: LucideIcon;
 }) => {
-  const { setSource, handleOpen } = useKnowledgeModalStore();
+  const { setSource: setEditSource, handleOpen: handleEditOpen } =
+    useKnowledgeModalStore();
+  const { setSource: setDeleteSource, handleOpen: handleDeleteOpen } =
+    useDeleteKnowledgeModalStore();
 
   const handleClickEdit = () => {
-    setSource(source);
-    handleOpen();
+    setEditSource(source);
+    handleEditOpen();
+  };
+
+  const handleClickDelete = () => {
+    setDeleteSource(source);
+    handleDeleteOpen();
   };
 
   return (
@@ -86,7 +95,9 @@ const KnowledgeBaseCard = ({
               </DropdownMenuItem>
               <DropdownMenuItem>Sync Now</DropdownMenuItem>
               <DropdownMenuItem>View History</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => handleClickDelete()}>
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>

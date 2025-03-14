@@ -13,6 +13,7 @@ import {
 import { CreateTelegramIntegration } from './schema/integration';
 import {
   CreateNewDatasourceParams,
+  DeleteDatasourceParams,
   UpdateDatasourceParams,
 } from './schema/knowledge';
 import { fetcher } from './utils';
@@ -114,6 +115,11 @@ export class API {
       await fetcher(`/api/datasource/${data.datasourceId}`, {
         method: 'PUT',
         body: JSON.stringify(data),
+      }),
+
+    deleteDatasource: async (data: DeleteDatasourceParams) =>
+      await fetcher(`/api/datasource/${data.datasourceId}`, {
+        method: 'DELETE',
       }),
   };
 

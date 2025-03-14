@@ -11,7 +11,7 @@ export const createNewDatasouceSchema = z
     type: z.enum(['DOCUMENT', 'TEXT', 'WEB', 'DATABASE']),
     category: z.string().optional(),
     content: z.string().optional(),
-    url: z.string().optional(),
+    url: z.string().url().optional(),
     size: z.number().optional(),
   })
   .refine(
@@ -45,7 +45,7 @@ export const updateDatasouceSchema = z
     type: z.enum(['DOCUMENT', 'TEXT', 'WEB', 'DATABASE']),
     category: z.string().optional(),
     content: z.string().optional(),
-    url: z.string().optional(),
+    url: z.string().url().optional(),
     size: z.number().optional(),
   })
   .refine(
@@ -67,7 +67,12 @@ export const updateDatasouceSchema = z
 //   { message: 'size is required when type is DATABASE', path: ['size'] }
 // );
 
+export const deleteDatasourceSchema = z.object({
+  datasourceId: z.string().min(1),
+});
+
 export type CreateNewDatasourceParams = z.infer<
   typeof createNewDatasouceSchema
 >;
 export type UpdateDatasourceParams = z.infer<typeof updateDatasouceSchema>;
+export type DeleteDatasourceParams = z.infer<typeof deleteDatasourceSchema>;

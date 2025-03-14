@@ -5,6 +5,7 @@ import { HTTPSTATUS } from '../../configs/http';
 import { asyncHandler } from '../../middleware/async';
 import {
   createDatasource,
+  deleteDatasourceById,
   getAllDatasource,
   updateDatasourceById,
 } from '../../services/datasource';
@@ -67,6 +68,19 @@ const datasourceLists = asyncHandler(async (_, res) => {
     res,
     data: datasources,
     message: 'Success getting all datasources',
+    success: true,
+    statusCode: HTTPSTATUS.OK,
+  });
+});
+
+const deteleDatasource = asyncHandler(async (req, res) => {
+  const { datasourceId } = datasourceIdSchema.parse(req.params);
+
+  await deleteDatasourceById(datasourceId);
+
+  new AppResponse({
+    res,
+    message: 'Success deleting datasource',
     success: true,
     statusCode: HTTPSTATUS.OK,
   });
@@ -139,4 +153,5 @@ export const dataSourceController = {
   createNewDatasource,
   updateDatasource,
   datasourceLists,
+  deteleDatasource,
 };

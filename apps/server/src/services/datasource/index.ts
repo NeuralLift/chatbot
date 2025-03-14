@@ -135,6 +135,29 @@ export const getDatasourceById = async (datasourceId: string) => {
   }
 };
 
+export const deleteDatasourceById = async (datasourceId: string) => {
+  try {
+    const isDatasourceExists = await getDatasourceById(datasourceId);
+    if (!isDatasourceExists) {
+      throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
+    }
+
+    const deletedDatasource = await db.datasource.delete({
+      where: {
+        id: datasourceId,
+      },
+    });
+
+    return deletedDatasource;
+  } catch (error) {
+    console.error(error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new Error('Failed to delete datasource');
+  }
+};
+
 export const getAllDatasource = async () => {
   try {
     const datasources = await db.datasource.findMany({

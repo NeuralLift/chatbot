@@ -13,6 +13,10 @@ const AddKnowledgeBaseModal = lazy(
   () => import('@/components/knowledge/modal/AddKnowledgeBaseModal')
 );
 
+const DeleteKnowledgeModal = lazy(
+  () => import('@/components/knowledge/modal/DeleteKnowledgeModal')
+);
+
 // const sources: KnowledgeSource[] = [
 //   {
 //     id: '1',
@@ -117,6 +121,7 @@ export default function KnowledgeBasePage() {
       </div>
 
       <AddKnowledgeBaseModal />
+      <DeleteKnowledgeModal />
     </div>
   );
 }
