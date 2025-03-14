@@ -6,7 +6,7 @@ const ChatWindow = lazy(() => import('@/components/chat/ChatWindow'));
 
 export default function ChatPage() {
   return (
-    <div className="mx-auto flex h-screen w-full max-w-full flex-col overflow-auto">
+    <div className="mx-auto flex h-dvh max-h-dvh w-full max-w-full flex-col overflow-auto">
       <Header />
       <ChatScreen />
       <div className="bg-background">
