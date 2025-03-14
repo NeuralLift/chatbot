@@ -4,6 +4,7 @@ import { ExternalLink, LucideProps } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { FormLabelWithTooltip } from '@/components/FormLabelWithTooltip';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,6 +30,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAgentStore } from '@/hooks/useAgent';
 import { API } from '@/lib/api';
 import {
@@ -36,14 +44,6 @@ import {
   CreateTelegramIntegration,
 } from '@/lib/schema/integration';
 import { cn } from '@/lib/utils';
-import { FormLabelWithTooltip } from '../FormLabelWithTooltip';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
 import { useCreateIntegrationMutation } from './useCreateIntegrationMutation';
 
 const TelegramLogo = (props?: LucideProps) => {

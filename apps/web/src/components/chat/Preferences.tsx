@@ -1,26 +1,27 @@
-import React, { memo, useState } from 'react';
+import type React from 'react';
+import { memo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, CreditCard, Settings, User } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useAgentStore } from '@/hooks/useAgent';
-import { API } from '@/lib/api';
-import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { DialogHeader } from '../ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from '@/components/ui/select';
+import { useAgentStore } from '@/hooks/useAgent';
+import { API } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 type Tab = {
   id: string;
@@ -205,15 +206,38 @@ function Preferences() {
           <Settings />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="h-[90vh] max-h-[600px] w-[95vw] max-w-[800px] md:h-auto">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
             Manage your account settings and preferences.
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4 flex h-[500px] gap-6">
-          <div className="w-1/4 shrink-0 border-r pr-4">
+        <div className="mt-4 flex h-[500px] flex-col md:flex-row md:gap-6">
+          {/* Mobile tab selector (visible only on small screens) */}
+          <div className="mb-4 border-b p-2 md:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {tabs.find((tab) => tab.id === activeTab)?.label ||
+                    'Select tab'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {tabs.map((tab) => (
+                  <SelectItem key={tab.id} value={tab.id}>
+                    <div className="flex items-center gap-2">
+                      <tab.icon className="h-4 w-4" />
+                      <span>{tab.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop sidebar (hidden on mobile) */}
+          <div className="hidden w-1/4 shrink-0 border-r pr-4 md:block">
             <nav className="flex flex-col space-y-1">
               {tabs.map((tab) => (
                 <button
@@ -231,6 +255,8 @@ function Preferences() {
               ))}
             </nav>
           </div>
+
+          {/* Content area (full width on mobile) */}
           <div className="flex-1 overflow-auto p-1">
             {tabs.find((tab) => tab.id === activeTab)?.content}
           </div>
