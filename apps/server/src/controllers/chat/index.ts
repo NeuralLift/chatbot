@@ -5,7 +5,7 @@ import { Response } from 'express';
 import z from 'zod';
 
 import type { CreateMessage } from '../../types/interface/message';
-import type { Agent } from '@prisma/client';
+import type { Agent, Prisma } from '@prisma/client';
 import { asyncHandler } from '../../middleware/async';
 import { getAgentById, updateAgentById } from '../../services/agent';
 import {
@@ -77,7 +77,15 @@ async function processStream(
   stream: IterableReadableStream<any>,
   res: Response,
   data: z.infer<typeof createNewMessageValidator>,
-  agent: Agent
+  agent: Prisma.AgentGetPayload<{
+    include: {
+      datasources: {
+        select: {
+          datasource: true;
+        };
+      };
+    };
+  }>
 ) {
   const errors: string[] = [];
   let accumulatedContent = '';
@@ -116,6 +124,7 @@ async function processStream(
     );
     await storeMessages(messagesToStore);
     await updateAgent(agent.id, {
+      datasourceIds: agent.datasources.map(({ datasource }) => datasource.id),
       lastActive: new Date().toISOString(),
     });
   }
