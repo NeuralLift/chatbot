@@ -64,17 +64,17 @@ export const createAgent: CreateNewAgent = async (data) => {
     const newAgent = await db.agent.create({
       data: {
         ...agentData,
-        model: 'groq/llama-3.3-70b-versatile',
+        model: agentData.model ?? 'llama-3.3-70b-versatile',
         successRate: 0,
         active: true,
         lastActive: new Date().toISOString(),
-        system_prompt: agentData.system_prompt || SYSTEM_PROMPT,
-        user_prompt: agentData.user_prompt || USER_PROMPT,
-        prompt_variables: agentData.prompt_variables || {},
+        system_prompt: agentData.system_prompt ?? SYSTEM_PROMPT,
+        user_prompt: agentData.user_prompt ?? USER_PROMPT,
+        prompt_variables: agentData.prompt_variables ?? {},
       },
     });
 
-    await manageAgentDatasourceRelations(newAgent.id, datasourceIds || []);
+    await manageAgentDatasourceRelations(newAgent.id, datasourceIds ?? []);
 
     return newAgent;
   } catch (error) {

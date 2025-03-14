@@ -57,8 +57,8 @@ const createNewMessage = asyncHandler(async (req, res) => {
     {
       configurable: {
         retrieverProvider: 'pinecone',
-        queryModel: 'groq/qwen-2.5-32b',
-        responseModel: 'groq/qwen-2.5-32b',
+        queryModel: `groq/${agent.model}`,
+        responseModel: `groq/${agent.model}`,
         datasourceId: agent.datasources.map(({ datasource }) => datasource.id),
         responseSystemPromptTemplate:
           agent.system_prompt ?? RESPONSE_SYSTEM_PROMPT_TEMPLATE,

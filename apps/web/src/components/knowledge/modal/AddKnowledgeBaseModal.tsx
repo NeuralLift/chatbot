@@ -152,8 +152,6 @@ function AddKnowledgeBaseContent() {
     },
   });
 
-  console.log(form.formState.errors);
-
   useEffect(() => {
     if (source) {
       form.setValue(

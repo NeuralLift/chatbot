@@ -1,6 +1,7 @@
 import { Agent } from '@/types/interface/agent';
 import { Conversation } from '@/types/interface/chat';
 import { KnowledgeSource } from '@/types/interface/knowledge';
+import { Model } from '@/types/interface/model';
 import {
   CreateNewAgentParams,
   DeleteAgentParams,
@@ -133,5 +134,14 @@ export class API {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+  };
+
+  /**
+   * Model related API endpoints.
+   * @namespace
+   * */
+  static model = {
+    getGroqModels: async () =>
+      await fetcher<Model[]>('/api/model/groq').then((r) => r.data),
   };
 }

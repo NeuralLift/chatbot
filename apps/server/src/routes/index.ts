@@ -8,6 +8,7 @@ import chatRouter from './chat';
 import conversationRouter from './conversation';
 import datasourceRouter from './datasource';
 import integration from './integration';
+import modelRouter from './model';
 
 const v1Router: Router = Router();
 
@@ -16,6 +17,7 @@ v1Router.use('/agent', agentRouter);
 v1Router.use('/datasource', datasourceRouter);
 v1Router.use('/conversation', conversationRouter);
 v1Router.use('/integration', integration);
+v1Router.use('/model', modelRouter);
 v1Router.use(
   '/uploadthing',
   createRouteHandler({

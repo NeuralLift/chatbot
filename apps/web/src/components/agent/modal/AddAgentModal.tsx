@@ -43,6 +43,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { API } from '@/lib/api';
 import { CreateNewAgentParams, createNewAgentSchema } from '@/lib/schema/agent';
+import { Model } from '@/types/interface/model';
 import { useAddAgentMutation } from './useAddAgentMutation';
 import { useAgentModalStore } from './useAgentModal';
 import { useEditAgentMutation } from './useEditAgentMutation';
@@ -78,9 +79,19 @@ function AddAgentContent() {
   const { data: sourcesData } = useQuery({
     queryKey: ['sources'],
     queryFn: API.datasource.getAllDatasources,
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
+  });
+
+  const { data: groqModelsData } = useQuery({
+    queryKey: ['groq-models'],
+    queryFn: API.model.getGroqModels,
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
   });
 
   const [multiSelectOptions, setMultiSelectOptions] = useState<Option[]>([]);
+  const [modelOptions, setModelOptions] = useState<Model[]>([]);
 
   const form = useForm<CreateNewAgentParams>({
     resolver: zodResolver(createNewAgentSchema),
@@ -89,7 +100,7 @@ function AddAgentContent() {
       datasourceIds:
         agent?.datasources.map((datasource) => datasource.id) ?? [],
       description: agent?.description ?? '',
-      model: agent?.model ?? 'groq/llama-3.3-70b-versatile',
+      model: agent?.model ?? 'llama-3.3-70b-versatile',
       type: 'AI',
       prompt_variables: {},
       system_prompt: agent?.system_prompt ?? '',
@@ -116,6 +127,12 @@ function AddAgentContent() {
       );
     }
   }, [agent, form]);
+
+  useEffect(() => {
+    if (groqModelsData) {
+      setModelOptions(groqModelsData);
+    }
+  }, [groqModelsData]);
 
   const onSubmit = (data: CreateNewAgentParams) => {
     if (isPending || isEditPending) return;
@@ -266,7 +283,35 @@ function AddAgentContent() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="AI">AI</SelectItem>
-                      <SelectItem value="HUMAN">Human</SelectItem>
+                      <SelectItem value="HUMAN" disabled>
+                        Human
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription className="sm:hidden">
+                  Select agent type
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="model"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabelWithTooltip label="Model" name="Select model" />
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="model">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {modelOptions.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.id}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormControl>
