@@ -22,7 +22,14 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e  # Stop execution if any command fails
+
             cd chatbot
+
+            # Tambahkan path pnpm
+            export PATH="/root/.local/share/pnpm:$PATH"
+
+            # Cek versi pnpm
+            pnpm -v
 
             # Simpan commit saat ini sebelum pull
             PREV_COMMIT=$(git rev-parse HEAD)
