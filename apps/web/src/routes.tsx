@@ -1,18 +1,19 @@
+import { lazy } from 'react';
 import { Route, Routes } from 'react-router';
 
-import NotFound from '@/components/NotFound';
-import ChatLayout from '@/layout/ChatLayout';
-import DashboardLayout from '@/layout/DashboardLayout';
-import AgentsPage from '@/pages/Agents';
-import BuilderPage from '@/pages/Builder';
-import ChatPage from '@/pages/Chat';
-import ConversationsPage from '@/pages/Conversations';
-import HomePage from '@/pages/Home';
-import IntegrationsPage from '@/pages/Integrations';
-import KnowledgeBasePage from '@/pages/KnowledgeBase';
-import NewChatPage from '@/pages/NewChatPage';
-import OverviewPage from '@/pages/Overview';
-import SettingsPage from '@/pages/Settings';
+const NotFound = lazy(() => import('@/components/NotFound'));
+const ChatLayout = lazy(() => import('@/layout/ChatLayout'));
+const DashboardLayout = lazy(() => import('@/layout/DashboardLayout'));
+const AgentsPage = lazy(() => import('@/pages/Agents'));
+const BuilderPage = lazy(() => import('@/pages/Builder'));
+const ChatPage = lazy(() => import('@/pages/Chat'));
+const ConversationsPage = lazy(() => import('@/pages/Conversations'));
+const HomePage = lazy(() => import('@/pages/Home'));
+const IntegrationsPage = lazy(() => import('@/pages/Integrations'));
+const KnowledgeBasePage = lazy(() => import('@/pages/KnowledgeBase'));
+const NewChatPage = lazy(() => import('@/pages/NewChatPage'));
+const OverviewPage = lazy(() => import('@/pages/Overview'));
+const SettingsPage = lazy(() => import('@/pages/Settings'));
 
 export function AppRoutes() {
   return (

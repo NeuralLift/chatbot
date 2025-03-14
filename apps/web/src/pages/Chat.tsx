@@ -1,9 +1,8 @@
 import { lazy } from 'react';
 
-import { ChatScreen } from '@/components/chat/ChatScreen';
-import { ChatWindow } from '@/components/chat/ChatWindow';
-
 const Header = lazy(() => import('@/components/chat/sidebar/Header'));
+const ChatScreen = lazy(() => import('@/components/chat/ChatScreen'));
+const ChatWindow = lazy(() => import('@/components/chat/ChatWindow'));
 
 export default function ChatPage() {
   return (

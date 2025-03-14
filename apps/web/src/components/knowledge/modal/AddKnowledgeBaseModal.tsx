@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
+import { useDropzone } from '@uploadthing/react';
 import {
   Book,
+  CheckCircle2,
   Database,
   Expand,
   File,
@@ -10,11 +12,13 @@ import {
   Globe,
   Loader2,
   Upload,
+  X,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { FormLabelWithTooltip } from '@/components/FormLabelWithTooltip';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,6 +39,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MultipleSelector, { Option } from '@/components/ui/multi-select';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -51,6 +56,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { API } from '@/lib/api';
 import {
   createNewDatasouceSchema,
@@ -97,11 +103,21 @@ const SourceIcons = {
 function AddKnowledgeBaseContent() {
   const { source, handleClose } = useKnowledgeModalStore();
   const [sourceType, setSourceType] = useState<SourceType>(
-    source?.type ?? 'WEB'
+    source?.type ?? 'DOCUMENT'
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate: addKnowledgeMutation, isPending } = useAddKnowledgeMutation();
   const { mutate: editKnowledgeMutation, isPending: isEditPending } =
     useEditKnowledgeMutation();
+  const { attachments, isUploading, uploadProgress, startUpload, reset } =
+    useMediaUpload();
+
+  const { getInputProps, getRootProps } = useDropzone({
+    onDrop: startUpload,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { onClick, ...rootProps } = getRootProps();
 
   const { data: agentsData } = useQuery({
     queryKey: ['agents'],
@@ -130,7 +146,7 @@ function AddKnowledgeBaseContent() {
       content: source?.content ?? '',
       description: source?.description ?? '',
       size: source?.size ?? 0,
-      type: (source?.type as 'WEB') ?? 'WEB',
+      type: (source?.type as 'DOCUMENT') ?? 'DOCUMENT',
       url: source?.url ?? '',
     },
   });
@@ -144,10 +160,28 @@ function AddKnowledgeBaseContent() {
     }
   }, [source, form]);
 
+  useEffect(() => {
+    if (attachments.length) {
+      form.setValue('fileUrl', attachments[0].url);
+    }
+  }, [attachments, form]);
+
   const onSubmit = (data: CreateNewDatasourceParams) => {
     const convertedData = convertEmptyStringsToUndefined(data);
 
     if (isPending || isEditPending) return;
+
+    if (convertedData.type === 'DOCUMENT') {
+      if (attachments.length > 0) {
+        convertedData.size = attachments[0].file.size;
+      }
+    }
+
+    if (convertedData.type === 'TEXT') {
+      if (convertedData.content) {
+        convertedData.size = convertedData.content.length;
+      }
+    }
 
     if (source) {
       editKnowledgeMutation(
@@ -269,7 +303,7 @@ function AddKnowledgeBaseContent() {
                       <SelectValue placeholder="Select source type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="WEB">
+                      <SelectItem disabled value="WEB">
                         <span className="flex items-center">
                           <SourceIcons.web className="mr-2 size-4" /> Web
                         </span>
@@ -280,13 +314,13 @@ function AddKnowledgeBaseContent() {
                           Document
                         </span>
                       </SelectItem>
-                      <SelectItem value="DATABASE">
+                      <SelectItem disabled value="DATABASE">
                         <span className="flex items-center">
                           <SourceIcons.database className="mr-2 size-4" />{' '}
                           Database
                         </span>
                       </SelectItem>
-                      <SelectItem value="ARTICLE">
+                      <SelectItem disabled value="ARTICLE">
                         <span className="flex items-center">
                           <SourceIcons.article className="mr-2 size-4" />{' '}
                           Article
@@ -387,25 +421,111 @@ function AddKnowledgeBaseContent() {
             //   </p>
             // </div>
             <FormField
-              name="url"
-              render={({ field }) => (
+              name="fileUrl"
+              render={() => (
                 <FormItem>
                   <FormLabelWithTooltip
                     label="Upload Document"
                     name="a Document in PDF, DOCX, TXT, CSV format"
                   />
-                  <div className="flex items-center gap-2">
+                  <div
+                    className="hover:bg-muted/50 group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all duration-200"
+                    {...rootProps}>
+                    {!isUploading && !attachments.length && (
+                      <div
+                        className="flex flex-col items-center justify-center gap-2 text-center"
+                        onClick={() => fileInputRef.current?.click()}>
+                        <div className="bg-muted group-hover:bg-background rounded-full p-3 transition-colors">
+                          <Upload className="text-muted-foreground h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Drag & drop your file here or click to browse
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            Supports PDF, DOCX, TXT, CSV formats
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {isUploading && (
+                      <div className="w-full space-y-4">
+                        <div className="flex w-full items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="bg-primary/10 animate-pulse rounded-md p-2">
+                              <File className="text-primary h-4 w-4" />
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="truncate text-sm font-medium">
+                                {attachments[0].file.name}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                Uploading...
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-medium">
+                            {uploadProgress}%
+                          </span>
+                        </div>
+
+                        <Progress value={uploadProgress} className="h-2" />
+
+                        {uploadProgress === 100 && (
+                          <div className="text-primary flex items-center justify-center gap-1 text-sm">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Upload complete!</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {attachments.length > 0 && !isUploading && (
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <div className="bg-primary/10 rounded-md p-2">
+                            <File className="text-primary h-4 w-4" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="truncate text-sm font-medium">
+                              {attachments[0].file.name}
+                            </p>
+                            <Badge>
+                              {attachments[0].file.size / 1024 / 1024 > 1
+                                ? `${(
+                                    attachments[0].file.size /
+                                    1024 /
+                                    1024
+                                  ).toFixed(2)} MB`
+                                : `${(attachments[0].file.size / 1024).toFixed(2)} KB`}
+                            </Badge>
+                            <p className="text-muted-foreground text-xs">
+                              Uploaded Successfull
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          onClick={() => reset()}
+                          type="button">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
                     <FormControl>
                       <Input
-                        {...field}
+                        {...getInputProps()}
+                        ref={fileInputRef}
                         type="file"
                         className="flex-1 cursor-pointer"
                       />
                     </FormControl>
-                    <Button variant="outline" size="icon">
-                      <Upload className="h-4 w-4" />
-                    </Button>
                   </div>
+
                   <FormDescription className="sm:hidden">
                     a Document in PDF, DOCX, TXT, CSV format
                   </FormDescription>
@@ -528,9 +648,13 @@ function AddKnowledgeBaseContent() {
 
         <SheetFooter className="gap-2">
           <Button type="submit" disabled={isPending || isEditPending}>
-            {isPending ||
-              (isEditPending && <Loader2 className="size-5 animate-spin" />)}
-            {source ? 'Update Source' : 'Add Source'}
+            {isPending || isEditPending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : source ? (
+              'Update Source'
+            ) : (
+              'Add Source'
+            )}
           </Button>
           <Button type="button" variant="cancel" onClick={() => handleClose()}>
             Cancel

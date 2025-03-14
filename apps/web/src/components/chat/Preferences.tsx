@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, CreditCard, Settings, User } from 'lucide-react';
 
@@ -195,12 +195,11 @@ const tabs: Tab[] = [
   },
 ];
 
-export default function Preferences() {
-  const [open, setOpen] = useState(false);
+function Preferences() {
   const [activeTab, setActiveTab] = useState('account');
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size={'circle'}>
           <Settings />
@@ -240,3 +239,7 @@ export default function Preferences() {
     </Dialog>
   );
 }
+
+Preferences.displayName = 'Preferences';
+
+export default memo(Preferences);

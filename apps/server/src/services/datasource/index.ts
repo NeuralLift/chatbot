@@ -55,7 +55,7 @@ export const createDatasource: CreateNewDatasource = async (data) => {
       await validateAgentIds(data.agentIds);
     }
 
-    const { agentIds, ...datasourceData } = data;
+    const { agentIds, fileUrl: _, ...datasourceData } = data;
 
     const newDatasource = await db.datasource.create({
       data: {

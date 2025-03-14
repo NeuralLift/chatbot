@@ -61,3 +61,13 @@ export function convertEmptyStringsToUndefined<
     ])
   ) as T;
 }
+
+export function formatFileSize(bytes: number) {
+  return bytes < 1024
+    ? `${bytes}B`
+    : bytes < 1048576
+      ? `${(bytes / 1024).toFixed(2)}KB`
+      : bytes < 1073741824
+        ? `${(bytes / 1048576).toFixed(2)}MB`
+        : `${(bytes / 1073741824).toFixed(2)}GB`;
+}

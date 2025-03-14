@@ -1,11 +1,17 @@
+import { lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
-import KnowledgeBase from '@/components/knowledge/KnowledgeBase';
-import AddKnowledgeBaseModal from '@/components/knowledge/modal/AddKnowledgeBaseModal';
 import { useKnowledgeModalStore } from '@/components/knowledge/modal/useKnowledgeModal';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
+
+const KnowledgeBase = lazy(
+  () => import('@/components/knowledge/KnowledgeBase')
+);
+const AddKnowledgeBaseModal = lazy(
+  () => import('@/components/knowledge/modal/AddKnowledgeBaseModal')
+);
 
 // const sources: KnowledgeSource[] = [
 //   {

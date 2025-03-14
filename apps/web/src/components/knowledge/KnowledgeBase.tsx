@@ -30,7 +30,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatRelativeDate } from '@/lib/utils';
+import { formatFileSize, formatRelativeDate } from '@/lib/utils';
 import { KnowledgeSource } from '@/types/interface/knowledge';
 import { BadgeStatus } from './BadgeStatus';
 import { useKnowledgeModalStore } from './modal/useKnowledgeModal';
@@ -96,7 +96,7 @@ const KnowledgeBaseCard = ({
       <CardContent className="space-y-4">
         <p className="text-muted-foreground text-sm">{source.description}</p>
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">Size: {source.size}</Badge>
+          <Badge>{formatFileSize(source.size)}</Badge>
           {source.url && (
             <Badge variant="outline" className="flex items-center gap-1">
               <Link to={source.url} className="h-3 w-3" />

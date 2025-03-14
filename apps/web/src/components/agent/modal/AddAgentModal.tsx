@@ -327,9 +327,13 @@ function AddAgentContent() {
         </div>
         <SheetFooter className="gap-2">
           <Button type="submit" disabled={isPending || isEditPending}>
-            {isPending ||
-              (isEditPending && <Loader2 className="size-5 animate-spin" />)}
-            {agent ? 'Edit Agent' : 'Add Agent'}
+            {isPending || isEditPending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : agent ? (
+              'Edit Agent'
+            ) : (
+              'Add Agent'
+            )}
           </Button>
           <Button type="button" variant="cancel" onClick={() => handleClose()}>
             Cancel

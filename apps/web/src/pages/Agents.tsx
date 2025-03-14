@@ -1,13 +1,21 @@
+import { lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
 import { AgentList } from '@/components/agent/AgentList';
-import AddAgentModal from '@/components/agent/modal/AddAgentModal';
-import DeleteAgentModal from '@/components/agent/modal/DeleteAgentModal';
-import DetailsAgentModal from '@/components/agent/modal/DetailsAgentModal';
 import { useAgentModalStore } from '@/components/agent/modal/useAgentModal';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
+
+const AddAgentModal = lazy(
+  () => import('@/components/agent/modal/AddAgentModal')
+);
+const DeleteAgentModal = lazy(
+  () => import('@/components/agent/modal/DeleteAgentModal')
+);
+const DetailsAgentModal = lazy(
+  () => import('@/components/agent/modal/DetailsAgentModal')
+);
 
 // import { Agent } from '@/types/interface/agent';
 

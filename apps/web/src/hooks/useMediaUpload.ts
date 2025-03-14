@@ -15,6 +15,7 @@ export function useMediaUpload() {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const { isUploading, startUpload } = useUploadThing('documentUploader', {
+    onUploadProgress: (progress) => setUploadProgress(progress),
     onBeforeUploadBegin: (files) => {
       const renamedFiles = files.map((file) => {
         const extension = file.name.split('.').pop();
@@ -50,22 +51,6 @@ export function useMediaUpload() {
           };
         })
       );
-
-      const storeDocumentRes = await fetch('/api/chat/store', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileUrl: attachments[0].url,
-        }),
-      });
-
-      if (!storeDocumentRes.ok) {
-        const data = await storeDocumentRes.json();
-
-        throw new Error(data.message);
-      }
     },
     onUploadError(e) {
       setAttachments((prev) => prev.filter((a) => !a.isUploading));

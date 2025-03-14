@@ -1,4 +1,8 @@
-import Integrations from '@/components/integrations/Integrations';
+import { lazy } from 'react';
+
+const Integrations = lazy(
+  () => import('@/components/integrations/Integrations')
+);
 
 export default function IntegrationsPage() {
   return (

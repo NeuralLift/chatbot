@@ -1,7 +1,7 @@
 import { Code, Image, LineChart, Type } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ChatWindow } from './ChatWindow';
+import ChatWindow from './ChatWindow';
 
 const features = [
   {

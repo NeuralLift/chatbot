@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,7 +9,6 @@ import {
   User,
 } from 'lucide-react';
 
-import CustomerDetailsModal from '@/components/conversations/modal/CustomerDetailsModal';
 import { useCustomerDetailsModalStore } from '@/components/conversations/modal/useCustomerDetailsModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Conversation } from '@/types/interface/chat';
+
+const CustomerDetailsModal = lazy(
+  () => import('@/components/conversations/modal/CustomerDetailsModal')
+);
 
 const conversations: Conversation[] = [
   {

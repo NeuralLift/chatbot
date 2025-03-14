@@ -10,7 +10,7 @@ import { API } from '@/lib/api';
 
 const MemoMarkdown = React.memo(Markdown);
 
-export function ChatScreen() {
+export default function ChatScreen() {
   const { messages, setMessages } = useChatStore();
   const { conversationId } = useParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -27,7 +27,7 @@ interface ChatWindowProps {
   className?: string;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({
+const ChatWindow: React.FC<ChatWindowProps> = ({
   position = 'bottom',
   className,
 }) => {
@@ -76,6 +76,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const onHandleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setQuestion(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+    }
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -268,6 +275,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             rows={1}
             placeholder="Ask me anything"
             onInput={handleInput}
+            onKeyDown={handleKeyDown}
             value={question}
             onChange={onHandleInputChange}
           />
@@ -316,15 +324,16 @@ type UploadButtonProps = {
   inputRef: React.RefObject<HTMLInputElement | null>;
 };
 
-const UploadFileButton: React.FC<UploadButtonProps> = memo(({ inputRef }) => {
+const UploadFileButton: React.FC<UploadButtonProps> = memo(() => {
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            onClick={() => inputRef.current?.click()}
+            onClick={() => {}}
             type="button"
             size="circle"
+            disabled
             variant="outline">
             <Paperclip />
           </Button>
@@ -367,3 +376,5 @@ const SendMessageButton: React.FC<SendButtonProps> = memo(
 );
 
 SendMessageButton.displayName = 'SendMessageButton';
+
+export default ChatWindow;
