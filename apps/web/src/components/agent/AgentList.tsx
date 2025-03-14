@@ -250,15 +250,15 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
           {agent.datasources.slice(0, 2).map((kb) => (
             <Badge
               key={kb.id}
-              variant="secondary"
-              className="bg-secondary/50 hover:bg-secondary/70 px-2 py-0.5 text-xs transition-colors">
+              variant="muted"
+              className="cursor-pointer px-2 py-0.5 text-xs transition-colors">
               {kb.category}
             </Badge>
           ))}
           {agent.datasources.length > 2 && (
             <Badge
-              variant="secondary"
-              className="bg-secondary/50 hover:bg-secondary/70 cursor-pointer px-2 py-0.5 text-xs transition-colors"
+              variant="muted"
+              className="cursor-pointer px-2 py-0.5 text-xs transition-colors"
               onClick={() => {
                 // setSelectedAgent(agent);
                 // setIsDetailsSheetOpen(true);
