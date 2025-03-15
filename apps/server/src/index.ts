@@ -47,9 +47,7 @@ export class Server {
 
     // Catch-all route to handle client-side routing
     this.app.get('*', (_req, res) => {
-      res.sendFile(
-        path.join(__dirname, '../../web/dist/index.html' + `?${Date.now()}`)
-      );
+      res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
     });
   }
 
