@@ -7,7 +7,7 @@ import {
   Globe,
   Link,
   LucideIcon,
-  MoreVertical,
+  MoreHorizontal,
   Search,
   SlidersHorizontal,
 } from 'lucide-react';
@@ -71,12 +71,14 @@ const KnowledgeBaseCard = ({
   };
 
   return (
-    <Card key={source.id} className="hover:bg-muted/50 transition-colors">
+    <Card
+      key={source.id}
+      className="hover:border-primary/50 group relative overflow-hidden transition-all duration-200 hover:shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="bg-primary/10 rounded-lg p-2">
-              <Icon className="text-primary h-5 w-5" />
+            <div className="bg-primary/10 group-hover:bg-primary/20 rounded-xl p-2">
+              <Icon className="text-primary h-6 w-6" />
             </div>
             <div>
               <CardTitle className="text-xl">{source.name}</CardTitle>
@@ -86,7 +88,7 @@ const KnowledgeBaseCard = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
-                <MoreVertical className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -148,7 +150,7 @@ export default function KnowledgeBase({ sources }: KnowledgeBaseProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-row items-center gap-4">
         <div className="relative max-w-lg flex-1">
           <Search className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
           <Input

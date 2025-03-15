@@ -648,6 +648,9 @@ function AddKnowledgeBaseContent() {
         </div>
 
         <SheetFooter className="gap-2">
+          <Button type="button" variant="cancel" onClick={() => handleClose()}>
+            Cancel
+          </Button>
           <Button type="submit" disabled={isPending || isEditPending}>
             {isPending || isEditPending ? (
               <Loader2 className="size-5 animate-spin" />
@@ -656,9 +659,6 @@ function AddKnowledgeBaseContent() {
             ) : (
               'Add Source'
             )}
-          </Button>
-          <Button type="button" variant="cancel" onClick={() => handleClose()}>
-            Cancel
           </Button>
         </SheetFooter>
       </form>

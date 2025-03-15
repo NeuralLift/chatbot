@@ -22,6 +22,7 @@ import {
 import { useAgentStore } from '@/hooks/useAgent';
 import { API } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { Theme, useTheme } from '../ThemeProvider';
 
 type Tab = {
   id: string;
@@ -96,6 +97,8 @@ const AccountContent = () => {
 };
 
 const SettingsContent = () => {
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">General Settings</h3>
@@ -121,9 +124,18 @@ const SettingsContent = () => {
               Switch between light and dark themes.
             </p>
           </div>
-          <div className="bg-muted h-6 w-10 rounded-full p-0.5">
-            <div className="h-5 w-5 rounded-full bg-white shadow-sm" />
-          </div>
+          <Select
+            defaultValue={theme}
+            onValueChange={(v) => setTheme(v as Theme)}>
+            <SelectTrigger className="w-full min-w-0 max-w-40">
+              <SelectValue placeholder="Select theme" />
+            </SelectTrigger>
+            <SelectContent className="min-w-0 max-w-40">
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System Default</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

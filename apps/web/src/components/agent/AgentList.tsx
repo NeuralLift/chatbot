@@ -155,7 +155,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+                className="absolute right-2 top-2">
                 <MoreHorizontal className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -706,8 +706,8 @@ export function AgentList({ agents }: AgentListProps) {
     //   )}
     // </div>
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="relative max-w-lg flex-1">
+      <div className="flex flex-row items-center gap-4">
+        <div className="relative max-w-lg flex-1 items-center">
           <Search className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
           <Input
             placeholder="Search agents..."

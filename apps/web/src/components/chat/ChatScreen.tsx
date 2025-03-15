@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useParams } from 'react-router';
 
@@ -16,6 +17,24 @@ export default function ChatScreen() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const [isThinkingOpen, setThinkingOpen] = useState<{
+    [key: string]: boolean;
+  }>(
+    window.localStorage.getItem('thinkingState')
+      ? JSON.parse(window.localStorage.getItem('thinkingState')!)
+      : {}
+  );
+
+  const toggleThinking = (id: string) => {
+    setThinkingOpen((prev) => {
+      const newState = {
+        ...prev,
+        [id]: !prev[id],
+      };
+      window.localStorage.setItem('thinkingState', JSON.stringify(newState));
+      return newState;
+    });
+  };
 
   const {
     data: conversationData,
@@ -46,6 +65,28 @@ export default function ChatScreen() {
     }
   }, [conversationData?.messages, setMessages]);
 
+  // Efek untuk mengatur isThinkingOpen pada pesan AI terbaru
+  useEffect(() => {
+    if (messages.length > 0) {
+      const latestMessage = messages[messages.length - 1];
+      // Hanya set isThinkingOpen ke true jika pesan terakhir dari AI
+      if (
+        latestMessage.role !== 'human' &&
+        latestMessage.content.includes('<think>')
+      ) {
+        const isExitsInState = Object.keys(isThinkingOpen).some(
+          (key) => key === latestMessage.id
+        );
+        if (!isExitsInState) {
+          setThinkingOpen((prev) => ({
+            ...prev,
+            [latestMessage.id]: true, // Set true untuk pesan AI terbaru
+          }));
+        }
+      }
+    }
+  }, [messages, isThinkingOpen]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -75,6 +116,42 @@ export default function ChatScreen() {
       <div className="mx-auto w-full max-w-3xl px-4 pt-4">
         {messages.map(({ id, role, content }) => {
           const isUser = role === 'human';
+
+          function extractThinkContentFromStream(content: string) {
+            let thinkContent = ''; // Content inside <think>...</think>
+            let cleanContent = ''; // Content outside <think>...</think>
+
+            // Find the start and end of the <think> block
+            const startThinkTagIndex = content.indexOf('<think>');
+            const endThinkTagIndex = content.indexOf('</think>');
+
+            if (startThinkTagIndex === -1) {
+              // No <think> tag found, all content is clean
+              cleanContent = content.trim();
+            } else if (endThinkTagIndex === -1) {
+              // <think> tag found but no </think>, treat everything after <think> as thinkContent
+              cleanContent = content.slice(0, startThinkTagIndex).trim();
+              thinkContent = content.slice(startThinkTagIndex + 7).trim();
+            } else {
+              // Both <think> and </think> tags found, split accordingly
+              cleanContent =
+                content.slice(0, startThinkTagIndex).trim() +
+                ' ' +
+                content.slice(endThinkTagIndex + 8).trim();
+              thinkContent = content
+                .slice(startThinkTagIndex + 7, endThinkTagIndex)
+                .trim();
+            }
+
+            return {
+              thinkContent: thinkContent,
+              cleanContent: cleanContent.trim(),
+            };
+          }
+
+          const { thinkContent, cleanContent } =
+            extractThinkContentFromStream(content);
+
           return (
             <div
               key={id}
@@ -109,10 +186,45 @@ export default function ChatScreen() {
               {/* AI Thinking loading */}
               {!isUser && content.trim() === '' ? (
                 <AiThinking />
-              ) : (
+              ) : isUser ? (
                 <div
-                  className={`prose dark:prose-invert max-w-none overflow-auto rounded-lg px-4 py-2 shadow-md ${isUser ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
-                  <MemoMarkdown>{content}</MemoMarkdown>
+                  className={`prose dark:prose-invert bg-accent text-accent-foreground min-w-0 max-w-none rounded-lg px-4 py-2 shadow-md`}>
+                  {cleanContent && <MemoMarkdown>{cleanContent}</MemoMarkdown>}
+                </div>
+              ) : (
+                <div className="">
+                  {thinkContent && (
+                    <div className="mb-2 w-full">
+                      {/* Toggle Button */}
+                      <button
+                        onClick={() => toggleThinking(id)}
+                        className="bg-muted flex items-center gap-1 rounded-full p-2 text-xs font-medium">
+                        <span>AI Thought</span>
+                        {isThinkingOpen[id] ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </button>
+
+                      {/* AI Thought Process (Collapsible) */}
+                      <div
+                        className={`text-muted-foreground prose dark:prose-invert min-w-0 max-w-none overflow-hidden overflow-y-auto p-2 text-sm backdrop-blur-md transition-all ${
+                          isThinkingOpen[id]
+                            ? 'max-h-[1000px] opacity-100'
+                            : 'hidden max-h-0 opacity-0'
+                        }`}>
+                        <MemoMarkdown>{thinkContent}</MemoMarkdown>
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    className={`prose dark:prose-invert bg-muted min-w-0 max-w-none rounded-lg px-4 py-2 shadow-md`}>
+                    {cleanContent && (
+                      <MemoMarkdown>{cleanContent}</MemoMarkdown>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
