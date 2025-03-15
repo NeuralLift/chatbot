@@ -13,7 +13,7 @@ export default function NewChatPage() {
   }, [resetMessages]);
 
   return (
-    <div className="mx-auto flex h-screen w-full max-w-full flex-col overflow-auto">
+    <div className="max-h-dvhw-full mx-auto flex h-dvh max-h-dvh max-w-full flex-col overflow-auto">
       <Header />
       <ChatWelcomeScreen />
     </div>
