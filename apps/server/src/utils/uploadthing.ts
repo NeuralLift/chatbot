@@ -14,6 +14,26 @@ export const uploadRouter: FileRouter = {
       maxFileSize: '16MB',
       maxFileCount: 1,
     },
+    'application/pdf': {
+      maxFileSize: '16MB',
+      maxFileCount: 1,
+    },
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+      maxFileSize: '16MB',
+      maxFileCount: 1,
+    },
+    'text/csv': {
+      maxFileSize: '16MB',
+      maxFileCount: 1,
+    },
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+      maxFileSize: '16MB',
+      maxFileCount: 1,
+    },
+    'text/plain': {
+      maxFileSize: '16MB',
+      maxFileCount: 1,
+    },
   })
     // Set permissions and file types for this FileRoute
     .middleware(async () => {

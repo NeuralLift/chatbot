@@ -1,10 +1,15 @@
+import { PineconeStore } from '@langchain/pinecone';
+
 import { db } from '../../configs/database';
 import {
   CreateNewDatasource,
   UpdateDataSource,
 } from '../../types/interface/datasource';
 import { AppError } from '../../utils/appError';
+import { getEmbeddings } from '../../utils/embeddings';
+import { getPineconeIndex } from '../../utils/pinecone';
 import { getAgentById } from '../agent';
+import { storeDocument } from '../document';
 
 const validateAgentIds = async (agentIds: string[]) => {
   await Promise.all(
@@ -63,6 +68,7 @@ export const createDatasource: CreateNewDatasource = async (data) => {
       },
     });
 
+    console.log(agentIds);
     await manageAgentDatasourceRelations(agentIds || [], newDatasource.id);
 
     return newDatasource;
@@ -87,6 +93,60 @@ export const updateDatasourceById: UpdateDataSource = async (
     const isDatasourceExists = await getDatasourceById(datasourceId);
     if (!isDatasourceExists) {
       throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
+    }
+
+    const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
+      pineconeIndex: getPineconeIndex(),
+      maxConcurrency: 5,
+    });
+
+    if (
+      data.type === 'DOCUMENT' &&
+      data.fileUrl &&
+      data.fileUrl !== isDatasourceExists.fileUrl
+    ) {
+      await vectorStore.delete({
+        ids: [isDatasourceExists.id],
+      });
+
+      await storeDocument({
+        fileUrl: data.fileUrl,
+        datasourceId: datasourceId,
+      });
+    }
+
+    if (
+      data.type === 'TEXT' &&
+      data.content &&
+      data.content !== isDatasourceExists.content
+    ) {
+      await vectorStore.delete({
+        filter: {
+          datasourceId,
+        },
+      });
+
+      await storeDocument({
+        content: data.content,
+        datasourceId: datasourceId,
+      });
+    }
+
+    if (
+      data.type === 'WEB' &&
+      data.url &&
+      data.url !== isDatasourceExists.url
+    ) {
+      await vectorStore.delete({
+        filter: {
+          datasourceId,
+        },
+      });
+
+      await storeDocument({
+        url: data.url,
+        datasourceId: datasourceId,
+      });
     }
 
     const { agentIds, ...datasourceData } = data;
@@ -141,6 +201,17 @@ export const deleteDatasourceById = async (datasourceId: string) => {
     if (!isDatasourceExists) {
       throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
     }
+
+    const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
+      pineconeIndex: getPineconeIndex(),
+      maxConcurrency: 5,
+    });
+
+    await vectorStore.delete({
+      filter: {
+        datasourceId,
+      },
+    });
 
     const deletedDatasource = await db.datasource.delete({
       where: {

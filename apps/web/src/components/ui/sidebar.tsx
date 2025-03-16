@@ -62,7 +62,7 @@ const SidebarProvider = React.forwardRef<
   (
     {
       defaultOpen = window.localStorage.getItem(SIDEBAR_COOKIE_NAME) ===
-        'true' || false,
+        'true' || true,
       open: openProp,
       onOpenChange: setOpenProp,
       className,

@@ -35,6 +35,16 @@ const createNewDatasource = asyncHandler(async (req, res) => {
     });
   }
 
+  if (data.type === 'WEB' && data.url) {
+    datasource = await createDatasource(data);
+
+    await storeDocument({
+      url: data.url,
+      agentIds: data.agentIds,
+      datasourceId: datasource.id,
+    });
+  }
+
   if (Object.keys(datasource).length === 0) {
     throw AppError.badRequest('Failed to create datasource', 'BAD_REQUEST');
   }

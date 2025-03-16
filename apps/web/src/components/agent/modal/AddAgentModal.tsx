@@ -214,7 +214,16 @@ function AddAgentContent() {
                               value: id,
                             };
                           })
-                        : []
+                        : field.value.map((id: string) => {
+                            const datasource = sourcesData?.find(
+                              (d) => d.id === id
+                            );
+
+                            return {
+                              label: datasource?.name,
+                              value: id,
+                            };
+                          })
                     }
                     defaultOptions={
                       agent
@@ -228,7 +237,16 @@ function AddAgentContent() {
                               value: id,
                             };
                           })
-                        : []
+                        : field.value.map((id: string) => {
+                            const datasource = sourcesData?.find(
+                              (d) => d.id === id
+                            );
+
+                            return {
+                              label: datasource?.name,
+                              value: id,
+                            };
+                          })
                     }
                     options={multiSelectOptions}
                     onChange={(options) => {

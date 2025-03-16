@@ -258,7 +258,14 @@ function AddKnowledgeBaseContent() {
                               value: id,
                             };
                           })
-                        : []
+                        : field.value.map((id: string) => {
+                            const agent = agentsData?.find((a) => a.id === id);
+
+                            return {
+                              label: agent?.name,
+                              value: id,
+                            };
+                          })
                     }
                     defaultOptions={
                       source
@@ -270,7 +277,14 @@ function AddKnowledgeBaseContent() {
                               value: id,
                             };
                           })
-                        : []
+                        : field.value.map((id: string) => {
+                            const agent = agentsData?.find((a) => a.id === id);
+
+                            return {
+                              label: agent?.name,
+                              value: id,
+                            };
+                          })
                     }
                     options={multiSelectOptions}
                     onChange={(options) => {
@@ -299,12 +313,13 @@ function AddKnowledgeBaseContent() {
                       setSourceType(e as SourceType);
                       field.onChange(e);
                     }}
-                    defaultValue={field.value}>
+                    defaultValue={field.value}
+                    disabled={source ? true : false}>
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Select source type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem disabled value="WEB">
+                      <SelectItem value="WEB">
                         <span className="flex items-center">
                           <SourceIcons.web className="mr-2 size-4" /> Web
                         </span>

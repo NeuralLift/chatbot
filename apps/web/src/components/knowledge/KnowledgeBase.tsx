@@ -184,18 +184,24 @@ export default function KnowledgeBase({ sources }: KnowledgeBaseProps) {
         </ScrollArea>
 
         <TabsContent value={activeTab} className="space-y-4">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredSources.map((source) => {
-              const Icon = sourceIcons[source.type];
-              return (
-                <KnowledgeBaseCard
-                  key={source.id}
-                  source={source}
-                  Icon={Icon}
-                />
-              );
-            })}
-          </div>
+          {filteredSources.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredSources.map((source) => {
+                const Icon = sourceIcons[source.type];
+                return (
+                  <KnowledgeBaseCard
+                    key={source.id}
+                    source={source}
+                    Icon={Icon}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-muted-foreground text-center">
+              No sources found.
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </>

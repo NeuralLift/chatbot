@@ -7,11 +7,13 @@ import { getEmbeddings } from '../../utils/embeddings';
 import { loadUrlDocument } from '../../utils/loadDocument';
 import { getPineconeIndex } from '../../utils/pinecone';
 import { textSplitter } from '../../utils/textSplitter';
+import { loadWebDocument } from '../../utils/webLoader';
+import { updateDatasourceById } from '../datasource';
 
 export const storeDocument: StoreDocument = async (data) => {
   try {
     let docs: Document[];
-    let result: string[] = [];
+    const result: string[] = [];
 
     const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
       pineconeIndex: getPineconeIndex(),
@@ -28,11 +30,17 @@ export const storeDocument: StoreDocument = async (data) => {
           datasourceId: data.datasourceId,
         },
       }));
+      // Split the documents into chunks to avoid exceeding the token limit
+      const chunkSize = 10;
+      for (let i = 0; i < mapSplitDocs.length; i += chunkSize) {
+        const chunk = mapSplitDocs.slice(i, i + chunkSize);
+        const chunkIds = chunk.map(() => uuid());
+        await vectorStore.addDocuments(chunk, {
+          ids: chunkIds,
+        });
 
-      const mapSplitDocsIds = mapSplitDocs.map(() => uuid());
-      result = await vectorStore.addDocuments(mapSplitDocs, {
-        ids: mapSplitDocsIds,
-      });
+        result.push(...chunkIds);
+      }
     }
 
     if (data.content) {
@@ -54,11 +62,51 @@ export const storeDocument: StoreDocument = async (data) => {
           datasourceId: data.datasourceId,
         },
       }));
+      // Split the documents into chunks to avoid exceeding the token limit
+      const chunkSize = 10;
+      for (let i = 0; i < mapSplitDocs.length; i += chunkSize) {
+        const chunk = mapSplitDocs.slice(i, i + chunkSize);
+        const chunkIds = chunk.map(() => uuid());
+        await vectorStore.addDocuments(chunk, {
+          ids: chunkIds,
+        });
 
-      const mapSplitDocsIds = mapSplitDocs.map(() => uuid());
-      result = await vectorStore.addDocuments(mapSplitDocs, {
-        ids: mapSplitDocsIds,
+        result.push(...chunkIds);
+      }
+    }
+
+    if (data.url) {
+      docs = await loadWebDocument(data.url);
+
+      const splitDocs = await textSplitter(docs);
+      const mapSplitDocs = splitDocs.map((doc) => ({
+        pageContent: doc.pageContent,
+        metadata: {
+          ...doc.metadata,
+          datasourceId: data.datasourceId,
+        },
+      }));
+
+      const size = mapSplitDocs
+        .map((doc) => doc.pageContent.length)
+        .reduce((a, b) => a + b, 0);
+
+      await updateDatasourceById(data.datasourceId, {
+        agentIds: data.agentIds,
+        size,
       });
+
+      // Split the documents into chunks to avoid exceeding the token limit
+      const chunkSize = 10;
+      for (let i = 0; i < mapSplitDocs.length; i += chunkSize) {
+        const chunk = mapSplitDocs.slice(i, i + chunkSize);
+        const chunkIds = chunk.map(() => uuid());
+        await vectorStore.addDocuments(chunk, {
+          ids: chunkIds,
+        });
+
+        result.push(...chunkIds);
+      }
     }
 
     return result;

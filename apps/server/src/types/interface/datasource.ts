@@ -18,9 +18,9 @@ export interface UpdateDataSource {
   (
     datasourceId: string,
     data: {
-      name: string;
+      name?: string;
       agentIds?: string[];
-      type: $Enums.DatasourceType;
+      type?: $Enums.DatasourceType;
       description?: string | null; // Description about the datasource
       category?: string | null; // Category of the datasource ex: Documentation
       content?: string | null; // Content of the datasource

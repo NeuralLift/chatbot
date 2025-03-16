@@ -722,11 +722,17 @@ export function AgentList({ agents }: AgentListProps) {
       </div>
 
       <div className="space-y-4">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
-        </div>
+        {agents.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {agents.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-muted-foreground text-center">
+            No agents found.
+          </div>
+        )}
       </div>
     </>
   );

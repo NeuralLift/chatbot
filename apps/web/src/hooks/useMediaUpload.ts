@@ -19,8 +19,11 @@ export function useMediaUpload() {
     onBeforeUploadBegin: (files) => {
       const renamedFiles = files.map((file) => {
         const extension = file.name.split('.').pop();
+        const mime = file.type || 'application/octet-stream';
 
-        return new File([file], `${Date.now()}_document.${extension}`);
+        return new File([file], `${Date.now()}_document.${extension}`, {
+          type: mime,
+        });
       });
 
       setAttachments((prev) => [
