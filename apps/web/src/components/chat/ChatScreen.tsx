@@ -209,7 +209,7 @@ export default function ChatScreen() {
 
                       {/* AI Thought Process (Collapsible) */}
                       <div
-                        className={`text-muted-foreground prose dark:prose-invert min-w-0 max-w-none overflow-hidden overflow-y-auto p-2 text-sm backdrop-blur-md transition-all ${
+                        className={`text-muted-foreground prose dark:prose-invert custom-scrollbar min-w-0 max-w-none overflow-hidden overflow-y-auto p-2 text-sm backdrop-blur-md transition-all ${
                           isThinkingOpen[id]
                             ? 'max-h-[1000px] opacity-100'
                             : 'hidden max-h-0 opacity-0'

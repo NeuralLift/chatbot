@@ -78,7 +78,7 @@ async function makePineconeRetriever(
 
   return vectorStore.asRetriever({
     filter,
-    k: 4,
+    k: 10,
     searchType: 'similarity',
   });
 }
