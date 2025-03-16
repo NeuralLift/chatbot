@@ -188,7 +188,7 @@ export default function ChatScreen() {
                 <AiThinking />
               ) : isUser ? (
                 <div
-                  className={`prose dark:prose-invert bg-accent text-accent-foreground min-w-0 rounded-lg px-4 py-2 shadow-md`}>
+                  className={`prose dark:prose-invert bg-accent text-accent-foreground min-w-0 max-w-none rounded-lg px-4 py-2 shadow-md`}>
                   {cleanContent && <MemoMarkdown>{cleanContent}</MemoMarkdown>}
                 </div>
               ) : (
@@ -209,7 +209,7 @@ export default function ChatScreen() {
 
                       {/* AI Thought Process (Collapsible) */}
                       <div
-                        className={`text-muted-foreground prose dark:prose-invert custom-scrollbar min-w-0 overflow-hidden overflow-y-auto p-2 text-sm backdrop-blur-md transition-all ${
+                        className={`text-muted-foreground prose dark:prose-invert custom-scrollbar min-w-0 max-w-none overflow-hidden overflow-y-auto p-2 text-sm backdrop-blur-md transition-all ${
                           isThinkingOpen[id]
                             ? 'max-h-[1000px] opacity-100'
                             : 'hidden max-h-0 opacity-0'
@@ -220,7 +220,7 @@ export default function ChatScreen() {
                   )}
 
                   <div
-                    className={`prose dark:prose-invert bg-muted min-w-0 rounded-lg px-4 py-2 shadow-md`}>
+                    className={`prose dark:prose-invert bg-muted min-w-0 max-w-none rounded-lg px-4 py-2 shadow-md`}>
                     {cleanContent && (
                       <MemoMarkdown>{cleanContent}</MemoMarkdown>
                     )}
