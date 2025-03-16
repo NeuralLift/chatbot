@@ -12,6 +12,14 @@ export default defineConfig({
       scope: '/',
       workbox: {
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https?.*/,
+            handler: 'NetworkFirst',
+          },
+        ],
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         orientation: 'any',
