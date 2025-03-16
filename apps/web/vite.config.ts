@@ -9,6 +9,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      scope: '/',
+      workbox: {
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         orientation: 'any',
         display: 'standalone',
