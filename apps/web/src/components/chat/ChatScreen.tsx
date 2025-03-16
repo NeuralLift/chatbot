@@ -192,7 +192,7 @@ export default function ChatScreen() {
                   {cleanContent && <MemoMarkdown>{cleanContent}</MemoMarkdown>}
                 </div>
               ) : (
-                <div className="">
+                <div className="min-w-0 max-w-none">
                   {thinkContent && (
                     <div className="mb-2 w-full">
                       {/* Toggle Button */}
