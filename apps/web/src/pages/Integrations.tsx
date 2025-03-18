@@ -1,4 +1,6 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
+
+import { ComponentLoader } from '@/components/ComponentLoader';
 
 const Integrations = lazy(
   () => import('@/components/integrations/Integrations')
@@ -21,7 +23,9 @@ export default function IntegrationsPage() {
           </Button> */}
         </div>
 
-        <Integrations />
+        <Suspense fallback={<ComponentLoader />}>
+          <Integrations />
+        </Suspense>
       </div>
     </div>
   );

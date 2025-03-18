@@ -1,9 +1,10 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
 import { AgentList } from '@/components/agent/AgentList';
 import { useAgentModalStore } from '@/components/agent/modal/useAgentModal';
+import { ComponentLoader } from '@/components/ComponentLoader';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
 
@@ -101,7 +102,9 @@ export default function AgentsPage() {
         {isLoading ? (
           <Loader2 className="mx-auto animate-spin" />
         ) : agents ? (
-          <AgentList agents={agents} />
+          <Suspense fallback={<ComponentLoader />}>
+            <AgentList agents={agents} />
+          </Suspense>
         ) : null}
       </div>
 

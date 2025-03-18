@@ -2,7 +2,9 @@ export interface Message {
   id: string;
   role: 'human' | 'ai';
   content: string;
+  isTemporary?: boolean;
   timestamp?: string; // Date string ex: 2 mins ago
+  createdAt?: string;
 }
 
 export interface ChatData {

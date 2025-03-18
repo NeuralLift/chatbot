@@ -90,9 +90,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     setIsPending(true);
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `temp-${Date.now()}`,
       content: question,
+      isTemporary: true,
       role: 'human',
+      createdAt: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -120,10 +122,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       const reader = res.body?.getReader();
       if (!reader) throw new Error('No readable stream found');
 
-      const aiMessageId = Date.now().toString();
+      const aiMessageId = `temp-${Date.now()}`;
       setMessages((prev) => [
         ...prev,
-        { id: aiMessageId, content: '', role: 'ai' },
+        { id: aiMessageId, content: '', role: 'ai', isTemporary: true },
       ]);
 
       await handleStreamResponse(reader, aiMessageId);

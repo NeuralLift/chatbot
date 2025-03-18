@@ -124,7 +124,7 @@ export default function ChatSidebar() {
               </SidebarGroupContent>
             ) : conversationsData && conversationsData.length > 0 ? (
               <>
-                <SidebarGroupContent className="custom-scrollbar max-h-96 overflow-y-auto">
+                <SidebarGroupContent className="custom-scrollbar max-h-96 overflow-hidden overflow-y-auto">
                   <SidebarMenu>
                     {conversationsData.map((conversation) => {
                       const content = conversation.messages?.length

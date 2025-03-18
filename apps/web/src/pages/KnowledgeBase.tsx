@@ -1,7 +1,8 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
+import { ComponentLoader } from '@/components/ComponentLoader';
 import { useKnowledgeModalStore } from '@/components/knowledge/modal/useKnowledgeModal';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
@@ -116,7 +117,9 @@ export default function KnowledgeBasePage() {
         {isLoading ? (
           <Loader2 className="mx-auto animate-spin" />
         ) : sources ? (
-          <KnowledgeBase sources={sources} />
+          <Suspense fallback={<ComponentLoader />}>
+            <KnowledgeBase sources={sources} />
+          </Suspense>
         ) : null}
       </div>
 
