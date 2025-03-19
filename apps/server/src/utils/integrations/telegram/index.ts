@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 
-import { getConversationByChatId } from '../../../services/conversation';
+import { ConversationService } from '../../../services/conversation';
 import { handleTelegramStream } from '../handleStream';
 
 export class TelegramBotInstance {
@@ -38,7 +38,8 @@ export class TelegramBotInstance {
       const userMessage = ctx.message.text;
       const chatId = ctx.chat.id;
 
-      this.conversation = await getConversationByChatId(chatId);
+      this.conversation =
+        await ConversationService.getConversationByChatId(chatId);
 
       const lastMessages = this.conversation?.messages.slice(-10) || [];
 

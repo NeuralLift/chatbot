@@ -1,20 +1,17 @@
-import { AgentType } from '@prisma/client';
-import z from 'zod';
-
 import { HTTPSTATUS } from '../../configs/http';
 import { asyncHandler } from '../../middleware/async';
-import {
-  createAgent,
-  deleteAgentById,
-  getAllAgents,
-  updateAgentById,
-} from '../../services/agent';
+import { AgentService } from '../../services/agent';
 import AppResponse from '../../utils/appResponse';
+import {
+  agentIdSchema,
+  createNewAgentValidator,
+  updateAgentSchema,
+} from '../../validator/agent';
 
 const createNewAgent = asyncHandler(async (req, res) => {
   const data = createNewAgentValidator.parse(req.body);
 
-  await createAgent(data);
+  await AgentService.createAgent(data);
 
   new AppResponse({
     res,
@@ -25,7 +22,7 @@ const createNewAgent = asyncHandler(async (req, res) => {
 });
 
 const agentLists = asyncHandler(async (_, res) => {
-  const agents = await getAllAgents();
+  const agents = await AgentService.getAllAgents();
 
   new AppResponse({
     res,
@@ -39,7 +36,7 @@ const agentLists = asyncHandler(async (_, res) => {
 const updateAgent = asyncHandler(async (req, res) => {
   const params = agentIdSchema.parse(req.params);
   const data = updateAgentSchema.parse(req.body);
-  await updateAgentById(params.agentId, data);
+  await AgentService.updateAgentById(params.agentId, data);
 
   new AppResponse({
     res,
@@ -51,7 +48,7 @@ const updateAgent = asyncHandler(async (req, res) => {
 
 const deleteAgent = asyncHandler(async (req, res) => {
   const data = agentIdSchema.parse(req.params);
-  await deleteAgentById(data.agentId);
+  await AgentService.deleteAgentById(data.agentId);
 
   new AppResponse({
     res,
@@ -59,49 +56,6 @@ const deleteAgent = asyncHandler(async (req, res) => {
     success: true,
     statusCode: HTTPSTATUS.OK,
   });
-});
-
-const createNewAgentValidator = z.object({
-  datasourceIds: z.array(z.string().min(1)).optional(),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  type: z.enum([AgentType.AI, AgentType.HUMAN]),
-  model: z.string().min(1),
-  system_prompt: z
-    .string({
-      message: 'System prompt is required',
-    })
-    .optional(),
-  user_prompt: z
-    .string({
-      message: 'System prompt is required',
-    })
-    .optional(),
-  prompt_variables: z.record(z.string()).optional(),
-});
-
-const updateAgentSchema = z.object({
-  datasourceIds: z.array(z.string().min(1)).optional(),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  type: z.enum([AgentType.AI, AgentType.HUMAN]),
-  model: z.string().min(1),
-  system_prompt: z
-    .string({
-      message: 'System prompt is required',
-    })
-    .optional(),
-  user_prompt: z
-    .string({
-      message: 'System prompt is required',
-    })
-    .optional(),
-  prompt_variables: z.record(z.string()).optional(),
-  lastActive: z.string().optional(),
-});
-
-const agentIdSchema = z.object({
-  agentId: z.string().min(1),
 });
 
 export const agentController = {

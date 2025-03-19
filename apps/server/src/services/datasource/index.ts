@@ -1,256 +1,262 @@
-import { PineconeStore } from '@langchain/pinecone';
-
 import { db } from '../../configs/database';
 import {
   CreateNewDatasource,
   UpdateDataSource,
 } from '../../types/interface/datasource';
 import { AppError } from '../../utils/appError';
-import { getEmbeddings } from '../../utils/embeddings';
-import { getPineconeIndex } from '../../utils/pinecone';
-import { getAgentById } from '../agent';
-import { storeDocument } from '../document';
+import { AgentService } from '../agent';
 
-const validateAgentIds = async (agentIds: string[]) => {
-  await Promise.all(
-    agentIds.map(async (agentId) => {
-      const isAgentExists = await getAgentById(agentId);
-      if (!isAgentExists) {
-        throw AppError.notFound(`Agent with ID ${agentId} not found`);
-      }
-    })
-  );
-};
-
-const manageAgentDatasourceRelations = async (
-  agentIds: string[],
-  datasourceId: string
-) => {
-  if (agentIds.length > 0) {
+export class DatasourceService {
+  static async validateAgentIds(agentIds: string[]) {
     await Promise.all(
       agentIds.map(async (agentId) => {
-        const agentDatasource = await db.agentOnDatasource.findFirst({
-          where: {
-            agentId,
-            datasourceId,
-          },
-        });
-        if (!agentDatasource) {
-          await db.agentOnDatasource.create({
-            data: {
+        const isAgentExists = await AgentService.getAgentById(agentId);
+        if (!isAgentExists) {
+          throw AppError.notFound(`Agent with ID ${agentId} not found`);
+        }
+      })
+    );
+  }
+
+  static async manageAgentDatasourceRelations(
+    agentIds: string[],
+    datasourceId: string
+  ) {
+    if (agentIds.length > 0) {
+      await Promise.all(
+        agentIds.map(async (agentId) => {
+          const agentDatasource = await db.agentOnDatasource.findFirst({
+            where: {
               agentId,
               datasourceId,
             },
           });
+          if (!agentDatasource) {
+            await db.agentOnDatasource.create({
+              data: {
+                agentId,
+                datasourceId,
+              },
+            });
+          }
+        })
+      );
+    } else {
+      await db.agentOnDatasource.deleteMany({
+        where: {
+          datasourceId,
+        },
+      });
+    }
+  }
+
+  static createDatasource: CreateNewDatasource = async (data) => {
+    try {
+      if (Array.isArray(data.agentIds) && data.agentIds.length > 0) {
+        await this.validateAgentIds(data.agentIds);
+      }
+
+      const { agentIds, ...datasourceData } = data;
+
+      const newDatasource = await db.datasource.create({
+        data: {
+          ...datasourceData,
+        },
+      });
+
+      await this.manageAgentDatasourceRelations(
+        agentIds || [],
+        newDatasource.id
+      );
+
+      return newDatasource;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new Error('Failed to create datasource');
+    }
+  };
+
+  static updateDatasourceById: UpdateDataSource = async (
+    datasourceId,
+    data
+  ) => {
+    try {
+      if (Array.isArray(data.agentIds) && data.agentIds.length > 0) {
+        await this.validateAgentIds(data.agentIds);
+      }
+
+      const isDatasourceExists = await this.getDatasourceById(datasourceId);
+      if (!isDatasourceExists) {
+        throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
+      }
+
+      /** (not used maybe deleted in the future)
+      const vectorStore = await PineconeStore.fromExistingIndex(
+        getEmbeddings(),
+        {
+          pineconeIndex: getPineconeIndex(),
+          maxConcurrency: 5,
         }
-      })
-    );
-  } else {
-    await db.agentOnDatasource.deleteMany({
-      where: {
-        datasourceId,
-      },
-    });
-  }
-};
+      );
 
-export const createDatasource: CreateNewDatasource = async (data) => {
-  try {
-    if (Array.isArray(data.agentIds) && data.agentIds.length > 0) {
-      await validateAgentIds(data.agentIds);
-    }
+      if (
+        data.type === 'DOCUMENT' &&
+        data.fileUrl &&
+        data.fileUrl !== isDatasourceExists.fileUrl
+      ) {
+        await vectorStore.delete({
+          ids: [isDatasourceExists.id],
+        });
 
-    const { agentIds, ...datasourceData } = data;
+        await storeDocument({
+          fileUrl: data.fileUrl,
+          datasourceId: datasourceId,
+        });
+      }
 
-    const newDatasource = await db.datasource.create({
-      data: {
-        ...datasourceData,
-      },
-    });
+      if (
+        data.type === 'TEXT' &&
+        data.content &&
+        data.content !== isDatasourceExists.content
+      ) {
+        await vectorStore.delete({
+          filter: {
+            datasourceId,
+          },
+        });
 
-    console.log(agentIds);
-    await manageAgentDatasourceRelations(agentIds || [], newDatasource.id);
+        await storeDocument({
+          content: data.content,
+          datasourceId: datasourceId,
+        });
+      }
 
-    return newDatasource;
-  } catch (error) {
-    console.error(error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new Error('Failed to create datasource');
-  }
-};
+      if (
+        data.type === 'WEB' &&
+        data.url &&
+        data.url !== isDatasourceExists.url
+      ) {
+        await vectorStore.delete({
+          filter: {
+            datasourceId,
+          },
+        });
 
-export const updateDatasourceById: UpdateDataSource = async (
-  datasourceId,
-  data
-) => {
-  try {
-    if (Array.isArray(data.agentIds) && data.agentIds.length > 0) {
-      await validateAgentIds(data.agentIds);
-    }
+        await storeDocument({
+          url: data.url,
+          datasourceId: datasourceId,
+        });
+      }
+        */
 
-    const isDatasourceExists = await getDatasourceById(datasourceId);
-    if (!isDatasourceExists) {
-      throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
-    }
+      const { agentIds, ...datasourceData } = data;
 
-    const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
-      pineconeIndex: getPineconeIndex(),
-      maxConcurrency: 5,
-    });
-
-    if (
-      data.type === 'DOCUMENT' &&
-      data.fileUrl &&
-      data.fileUrl !== isDatasourceExists.fileUrl
-    ) {
-      await vectorStore.delete({
-        ids: [isDatasourceExists.id],
+      const updatedDatasource = await db.datasource.update({
+        where: {
+          id: datasourceId,
+        },
+        data: {
+          ...datasourceData,
+        },
       });
 
-      await storeDocument({
-        fileUrl: data.fileUrl,
-        datasourceId: datasourceId,
-      });
-    }
+      await this.manageAgentDatasourceRelations(agentIds || [], datasourceId);
 
-    if (
-      data.type === 'TEXT' &&
-      data.content &&
-      data.content !== isDatasourceExists.content
-    ) {
+      return updatedDatasource;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new Error('Failed to update datasource');
+    }
+  };
+
+  static async getDatasourceById(datasourceId: string) {
+    try {
+      const datasource = await db.datasource.findFirst({
+        where: {
+          id: datasourceId,
+        },
+        include: {
+          agents: {
+            select: {
+              agent: true,
+              agentId: true,
+            },
+          },
+        },
+      });
+
+      return datasource;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to get datasource');
+    }
+  }
+
+  static async deleteDatasourceById(datasourceId: string) {
+    try {
+      const isDatasourceExists = await this.getDatasourceById(datasourceId);
+      if (!isDatasourceExists) {
+        throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
+      }
+
+      /** (not used maybe deleted in the future)
+      const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
+        pineconeIndex: getPineconeIndex(),
+        maxConcurrency: 5,
+      });
+      
       await vectorStore.delete({
         filter: {
           datasourceId,
         },
       });
+      */
 
-      await storeDocument({
-        content: data.content,
-        datasourceId: datasourceId,
-      });
-    }
-
-    if (
-      data.type === 'WEB' &&
-      data.url &&
-      data.url !== isDatasourceExists.url
-    ) {
-      await vectorStore.delete({
-        filter: {
-          datasourceId,
+      const deletedDatasource = await db.datasource.delete({
+        where: {
+          id: datasourceId,
         },
       });
 
-      await storeDocument({
-        url: data.url,
-        datasourceId: datasourceId,
-      });
+      return deletedDatasource;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new Error('Failed to delete datasource');
     }
-
-    const { agentIds, ...datasourceData } = data;
-
-    const updatedDatasource = await db.datasource.update({
-      where: {
-        id: datasourceId,
-      },
-      data: {
-        ...datasourceData,
-      },
-    });
-
-    await manageAgentDatasourceRelations(agentIds || [], datasourceId);
-
-    return updatedDatasource;
-  } catch (error) {
-    console.error(error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new Error('Failed to update datasource');
   }
-};
 
-export const getDatasourceById = async (datasourceId: string) => {
-  try {
-    const datasource = await db.datasource.findFirst({
-      where: {
-        id: datasourceId,
-      },
-      include: {
-        agents: {
-          select: {
-            agent: true,
-            agentId: true,
+  static async getAllDatasource() {
+    try {
+      const datasources = await db.datasource.findMany({
+        include: {
+          agents: {
+            select: {
+              agent: true,
+              agentId: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return datasource;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Failed to get datasource');
-  }
-};
+      const remappedDatasources = datasources.map((datasource) => ({
+        ...datasource,
+        agentIds: datasource.agents.map((agent) => agent.agentId),
+        agents: datasource.agents.map((agent) => agent.agent),
+      }));
 
-export const deleteDatasourceById = async (datasourceId: string) => {
-  try {
-    const isDatasourceExists = await getDatasourceById(datasourceId);
-    if (!isDatasourceExists) {
-      throw AppError.notFound(`Datasource with ID ${datasourceId} not found`);
+      return remappedDatasources;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to get datasource');
     }
-
-    const vectorStore = await PineconeStore.fromExistingIndex(getEmbeddings(), {
-      pineconeIndex: getPineconeIndex(),
-      maxConcurrency: 5,
-    });
-
-    await vectorStore.delete({
-      filter: {
-        datasourceId,
-      },
-    });
-
-    const deletedDatasource = await db.datasource.delete({
-      where: {
-        id: datasourceId,
-      },
-    });
-
-    return deletedDatasource;
-  } catch (error) {
-    console.error(error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new Error('Failed to delete datasource');
   }
-};
-
-export const getAllDatasource = async () => {
-  try {
-    const datasources = await db.datasource.findMany({
-      include: {
-        agents: {
-          select: {
-            agent: true,
-            agentId: true,
-          },
-        },
-      },
-    });
-
-    const remappedDatasources = datasources.map((datasource) => ({
-      ...datasource,
-      agentIds: datasource.agents.map((agent) => agent.agentId),
-      agents: datasource.agents.map((agent) => agent.agent),
-    }));
-
-    return remappedDatasources;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Failed to get datasource');
-  }
-};
+}
