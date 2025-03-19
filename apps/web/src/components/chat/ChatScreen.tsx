@@ -1,12 +1,13 @@
 import React, { lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { useParams } from 'react-router';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useChatStore } from '@/hooks/useChat';
 import { API } from '@/lib/api';
 import { ComponentLoader } from '../ComponentLoader';
+import { Button } from '../ui/button';
 
 const Markdown = lazy(() => import('react-markdown'));
 const AiThinking = lazy(() => import('@/components/AiThinking'));
@@ -26,6 +27,7 @@ export default function ChatScreen() {
       ? JSON.parse(window.localStorage.getItem('thinkingState')!)
       : {}
   );
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const toggleThinking = (id: string) => {
     setThinkingOpen((prev) => {
@@ -108,6 +110,7 @@ export default function ChatScreen() {
         scrollContainerRef.current;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 1;
       setShouldAutoScroll(isAtBottom);
+      setShowScrollButton(!isAtBottom);
     }
   }, [scrollContainerRef, setShouldAutoScroll]);
 
@@ -115,7 +118,7 @@ export default function ChatScreen() {
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className="custom-scrollbar flex-1 overflow-y-auto">
+      className="custom-scrollbar relative flex-1 overflow-y-auto">
       {isError && <div>{error.message}</div>}
 
       <div className="mx-auto w-full max-w-3xl px-4 pt-4">
@@ -243,6 +246,30 @@ export default function ChatScreen() {
         )}
         <div ref={messagesEndRef} />
       </div>
+      <ScrollToBottomButton
+        scrollToBottom={scrollToBottom}
+        isVisible={showScrollButton}
+      />
     </div>
   );
 }
+
+const ScrollToBottomButton = ({
+  scrollToBottom,
+  isVisible,
+}: {
+  scrollToBottom: () => void;
+  isVisible: boolean;
+}) => {
+  return (
+    <Button
+      variant="outline"
+      size="circle"
+      className={`sticky bottom-2 left-1/2 -translate-x-1/2 transition-opacity duration-300 ${
+        isVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+      }`}
+      onClick={scrollToBottom}>
+      <ArrowDown />
+    </Button>
+  );
+};

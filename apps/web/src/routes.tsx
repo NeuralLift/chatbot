@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 
-import { ComponentLoader } from '@/components/ComponentLoader';
+import TopLoader from '@/components/TopLoader';
 
 const NotFound = lazy(() => import('@/components/NotFound'));
 const ChatLayout = lazy(() => import('@/layout/ChatLayout'));
@@ -26,7 +26,7 @@ export function AppRoutes() {
           <Route
             index
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <HomePage />
               </Suspense>
             }
@@ -35,14 +35,14 @@ export function AppRoutes() {
           <Route
             path="chat"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <ChatLayout />
               </Suspense>
             }>
             <Route
               index
               element={
-                <Suspense fallback={<ComponentLoader />}>
+                <Suspense fallback={<TopLoader isLoading />}>
                   <NewChatPage />
                 </Suspense>
               }
@@ -50,7 +50,7 @@ export function AppRoutes() {
             <Route
               path=":conversationId"
               element={
-                <Suspense fallback={<ComponentLoader />}>
+                <Suspense fallback={<TopLoader isLoading />}>
                   <ChatPage />
                 </Suspense>
               }
@@ -68,14 +68,14 @@ export function AppRoutes() {
         <Route
           path="dashboard"
           element={
-            <Suspense fallback={<ComponentLoader />}>
+            <Suspense fallback={<TopLoader isLoading />}>
               <DashboardLayout />
             </Suspense>
           }>
           <Route
             index
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <OverviewPage />
               </Suspense>
             }
@@ -83,14 +83,14 @@ export function AppRoutes() {
           <Route
             path="conversations"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <ConversationsPage />
               </Suspense>
             }>
             <Route
               path=":id"
               element={
-                <Suspense fallback={<ComponentLoader />}>
+                <Suspense fallback={<TopLoader isLoading />}>
                   <ConversationsPage />
                 </Suspense>
               }
@@ -99,7 +99,7 @@ export function AppRoutes() {
           <Route
             path="agents"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <AgentsPage />
               </Suspense>
             }
@@ -107,7 +107,7 @@ export function AppRoutes() {
           <Route
             path="knowledge"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <KnowledgeBasePage />
               </Suspense>
             }
@@ -115,7 +115,7 @@ export function AppRoutes() {
           <Route
             path="integrations"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <IntegrationsPage />
               </Suspense>
             }
@@ -123,7 +123,7 @@ export function AppRoutes() {
           <Route
             path="builder"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <BuilderPage />
               </Suspense>
             }
@@ -131,7 +131,7 @@ export function AppRoutes() {
           <Route
             path="settings"
             element={
-              <Suspense fallback={<ComponentLoader />}>
+              <Suspense fallback={<TopLoader isLoading />}>
                 <SettingsPage />
               </Suspense>
             }
@@ -142,7 +142,7 @@ export function AppRoutes() {
         <Route
           path="*"
           element={
-            <Suspense fallback={<ComponentLoader />}>
+            <Suspense fallback={<TopLoader isLoading />}>
               <NotFound />
             </Suspense>
           }

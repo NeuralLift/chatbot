@@ -79,8 +79,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+    if (e.key === 'Enter' && e.ctrlKey) {
+      // e.preventDefault();
       onSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     }
   };
