@@ -1,9 +1,9 @@
 import { asyncHandler } from '../../middleware/async';
-import { getAllGroqModels } from '../../services/model';
+import { ModelService } from '../../services/model';
 import AppResponse from '../../utils/appResponse';
 
 const groqModelLists = asyncHandler(async (_req, res) => {
-  const models = await getAllGroqModels();
+  const models = await ModelService.getAllModels();
 
   new AppResponse({
     res,

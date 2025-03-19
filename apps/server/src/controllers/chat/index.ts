@@ -7,14 +7,9 @@ import z from 'zod';
 import type { CreateMessage } from '../../types/interface/message';
 import type { Agent, Prisma } from '@prisma/client';
 import { asyncHandler } from '../../middleware/async';
-import { getAgentById, updateAgentById } from '../../services/agent';
-import {
-  createConversation,
-  getConversationByChatId,
-  getConversationById,
-  updateConversationById,
-} from '../../services/conversation';
-import { createMessage } from '../../services/messages';
+import { AgentService } from '../../services/agent';
+import { ConversationService } from '../../services/conversation';
+import { messageService } from '../../services/messages';
 import { UpdateAgent } from '../../types/interface/agent';
 import { AppError } from '../../utils/appError';
 import { graph } from '../../utils/mygraph/cs_graph';
@@ -22,6 +17,7 @@ import {
   QUERY_SYSTEM_PROMPT_TEMPLATE,
   RESPONSE_SYSTEM_PROMPT_TEMPLATE,
 } from '../../utils/mygraph/cs_graph/prompt';
+import { createNewMessageValidator } from '../../validator/chat';
 
 type MessageEvent = {
   eventData: Record<string, any>;
@@ -29,19 +25,9 @@ type MessageEvent = {
   res: Response;
 };
 
-const createNewMessageValidator = z.object({
-  messages: z.array(
-    z.object({ role: z.enum(['human', 'ai']), content: z.string().min(1) })
-  ),
-  userId: z.string().min(1),
-  agentId: z.string().min(1),
-  chatId: z.number().min(1).optional().describe('Telegram chat id'),
-  conversationId: z.string().min(1).optional(),
-});
-
 const createNewMessage = asyncHandler(async (req, res) => {
   const data = createNewMessageValidator.parse(req.body);
-  const agent = await getAgentById(data.agentId);
+  const agent = await AgentService.getAgentById(data.agentId);
   if (!agent) {
     throw AppError.notFound('Agent not found');
   }
@@ -166,7 +152,7 @@ function createMessagesToStore(
 
 async function storeMessages(messages: CreateMessage[]) {
   for (const message of messages) {
-    await createMessage(message);
+    await messageService.createMessage(message);
   }
 }
 
@@ -175,14 +161,18 @@ const getOrCreateConversation = async (
   agent: Agent
 ) => {
   if (data.conversationId) {
-    const conversation = await getConversationById(data.conversationId);
+    const conversation = await ConversationService.getConversationById(
+      data.conversationId
+    );
     if (conversation) return conversation;
   } else if (data.chatId) {
-    const conversation = await getConversationByChatId(data.chatId);
+    const conversation = await ConversationService.getConversationByChatId(
+      data.chatId
+    );
     if (conversation) return conversation;
   }
 
-  return await createConversation({
+  return await ConversationService.createConversation({
     agentId: agent.id,
     userId: data.userId,
     chatId: data.chatId,
@@ -196,13 +186,13 @@ const updateConversation = async (
   conversationId: string,
   filteredData: Record<string, string>
 ) => {
-  return await updateConversationById(conversationId, {
+  return await ConversationService.updateConversationById(conversationId, {
     priority: filteredData.priority as 'low' | 'medium' | 'high',
   });
 };
 
 const updateAgent: UpdateAgent = async (agentId, data) => {
-  return await updateAgentById(agentId, data);
+  return await AgentService.updateAgentById(agentId, data);
 };
 
 function handleMessageEvent({
