@@ -16,7 +16,9 @@ export const useDetailsAgentModalStore = create<AgentModalState>((set) => ({
     id: '',
     name: '',
     description: '',
-    conversations: [],
+    _count: {
+      conversations: 0,
+    },
     datasources: [],
     model: '',
     system_prompt: '',
