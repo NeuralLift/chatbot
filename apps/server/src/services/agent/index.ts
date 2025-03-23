@@ -154,7 +154,11 @@ export class AgentService {
     try {
       const agents = await db.agent.findMany({
         include: {
-          conversations: true,
+          _count: {
+            select: {
+              conversations: true,
+            },
+          },
           datasources: {
             select: {
               datasource: true,

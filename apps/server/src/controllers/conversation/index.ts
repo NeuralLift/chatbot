@@ -23,8 +23,19 @@ const getConversationId = asyncHandler(async (req, res) => {
   });
 });
 
-const conversationLists = asyncHandler(async (_req, res) => {
-  const conversations = await ConversationService.getAllConversations();
+const conversationLists = asyncHandler(async (req, res) => {
+  const query = req.query;
+  const includeAllMessages = query.messages === 'all';
+  const chatOnly = query.chatOnly === 'true';
+  let conversations;
+
+  if (includeAllMessages) {
+    conversations = chatOnly
+      ? await ConversationService.getAllConversationsChatOnly()
+      : await ConversationService.getAllConversationsAndMessages();
+  } else {
+    conversations = await ConversationService.getAllConversations();
+  }
 
   new AppResponse({
     res,

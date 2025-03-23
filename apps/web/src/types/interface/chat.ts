@@ -14,11 +14,18 @@ export interface ChatData {
 
 export interface Conversation {
   id: string;
-  customer: {
+  // customer: {
+  //   name: string;
+  //   email: string;
+  //   status: 'online' | 'offline';
+  //   lastSeen?: string;
+  // };
+  user: {
+    id: string;
     name: string;
     email: string;
-    status: 'online' | 'offline';
-    lastSeen?: string;
+    // status: 'online' | 'offline';
+    // lastSeen?: string;
   };
   messages?: Message[];
   status: 'active' | 'resolved' | 'pending';

@@ -42,8 +42,16 @@ export class API {
         (r) => r.data
       ),
 
-    getAllConversations: async () =>
-      await fetcher<Conversation[]>('/api/conversation').then((r) => r.data),
+    getAllConversations: async ({
+      chatOnly = false,
+      includeAllMessages = false,
+    }: {
+      chatOnly?: boolean;
+      includeAllMessages?: boolean;
+    }) =>
+      await fetcher<Conversation[]>(
+        `/api/conversation?messages=${includeAllMessages ? 'all' : '1'}&chatOnly=${chatOnly}`
+      ).then((r) => r.data),
 
     deleteConversation: async (data: DeleteConversationParams) =>
       await fetcher(`/api/conversation/${data.conversationId}`, {

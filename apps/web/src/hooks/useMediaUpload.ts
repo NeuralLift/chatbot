@@ -90,6 +90,7 @@ export function useMediaUpload() {
     attachments,
     isUploading,
     uploadProgress,
+    setAttachments,
     removeAttachment,
     reset,
   };

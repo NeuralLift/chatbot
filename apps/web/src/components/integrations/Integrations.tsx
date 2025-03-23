@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { ExternalLink, LucideProps } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -177,7 +177,7 @@ export default function Integrations() {
     useCreateIntegrationMutation();
   const { agentId } = useAgentStore();
 
-  const { data: agentsData } = useQuery({
+  const { data: agentsData } = useSuspenseQuery({
     queryKey: ['agents'],
     queryFn: API.agent.getAllAgents,
     refetchOnWindowFocus: false,

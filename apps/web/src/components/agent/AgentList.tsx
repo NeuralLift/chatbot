@@ -200,7 +200,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
             </Badge>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">
-                {agent.conversations?.length}
+                {agent._count.conversations}
               </span>
               <span className="text-muted-foreground text-xs">
                 conversations

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
 import { ComponentLoader } from '@/components/ComponentLoader';
@@ -91,9 +91,10 @@ export default function KnowledgeBasePage() {
     data: sources,
     isLoading,
     // isError,
-  } = useQuery({
+  } = useSuspenseQuery({
     queryKey: ['sources'],
     queryFn: API.datasource.getAllDatasources,
+    refetchOnWindowFocus: false,
   });
 
   return (

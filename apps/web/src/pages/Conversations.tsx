@@ -1,4 +1,5 @@
-import { lazy, useState } from 'react';
+import { useState } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,266 +23,276 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { API } from '@/lib/api';
 import { Conversation } from '@/types/interface/chat';
 
-const CustomerDetailsModal = lazy(
-  () => import('@/components/conversations/modal/CustomerDetailsModal')
-);
+// const CustomerDetailsModal = lazy(
+//   () => import('@/components/conversations/modal/CustomerDetailsModal')
+// );
 
-const conversations: Conversation[] = [
-  {
-    id: '1',
-    customer: {
-      name: 'Alice Brown',
-      email: 'alice@example.com',
-      status: 'online',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'Hi, I need help with my account settings',
-        role: 'human',
-        timestamp: '2 mins ago',
-      },
-      {
-        id: 'm2',
-        content:
-          "I'll be happy to help you with your account settings. What specific settings are you trying to adjust?",
-        role: 'ai',
-        timestamp: '1 min ago',
-      },
-      {
-        id: 'm3',
-        content: "I can't change my password",
-        role: 'human',
-        timestamp: '1 min ago',
-      },
-    ],
-    status: 'active',
-    category: 'Account',
-    priority: 'medium',
-    created_at: '10 mins ago',
-    updated_at: '1 min ago',
-  },
-  {
-    id: '2',
-    customer: {
-      name: 'John Smith',
-      email: 'john@example.com',
-      status: 'offline',
-      lastSeen: '5 mins ago',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'How do I cancel my subscription?',
-        role: 'human',
-        timestamp: '15 mins ago',
-      },
-      {
-        id: 'm2',
-        content:
-          "I can help you cancel your subscription. Could you please confirm which plan you're currently on?",
-        role: 'ai',
-        timestamp: '14 mins ago',
-      },
-    ],
-    status: 'pending',
-    category: 'Billing',
-    priority: 'high',
-    created_at: '15 mins ago',
-    updated_at: '14 mins ago',
-  },
-  {
-    id: '3',
-    customer: {
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      status: 'online',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'When will my order be delivered?',
-        role: 'human',
-        timestamp: '1 hour ago',
-      },
-      {
-        id: 'm2',
-        content:
-          'Let me check that for you. Could you please provide your order number?',
-        role: 'ai',
-        timestamp: '59 mins ago',
-      },
-      {
-        id: 'm3',
-        content: "It's #ORD-12345",
-        role: 'human',
-        timestamp: '58 mins ago',
-      },
-    ],
-    status: 'active',
-    category: 'Orders',
-    priority: 'medium',
-    created_at: '1 hour ago',
-    updated_at: '58 mins ago',
-  },
-  {
-    id: '4',
-    customer: {
-      name: 'Michael Green',
-      email: 'michael@example.com',
-      status: 'offline',
-      lastSeen: '20 mins ago',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'What are your support hours?',
-        role: 'human',
-        timestamp: '30 mins ago',
-      },
-      {
-        id: 'm2',
-        content: 'Our support is available 24/7. How can I assist you further?',
-        role: 'ai',
-        timestamp: '29 mins ago',
-      },
-    ],
-    status: 'resolved',
-    category: 'Support',
-    priority: 'low',
-    created_at: '30 mins ago',
-    updated_at: '29 mins ago',
-  },
-  {
-    id: '5',
-    customer: {
-      name: 'Sarah Lee',
-      email: 'sarah@example.com',
-      status: 'online',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'I have a question about my order.',
-        role: 'human',
-        timestamp: '2 mins ago',
-      },
-    ],
-    status: 'active',
-    category: 'Orders',
-    priority: 'high',
-    created_at: '2 mins ago',
-    updated_at: '2 mins ago',
-  },
-  {
-    id: '6',
-    customer: {
-      name: 'John Doe',
-      email: 'john@example.com',
-      status: 'offline',
-      lastSeen: '1 hour ago',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'I need help with my account settings',
-        role: 'human',
-        timestamp: '1 hour ago',
-      },
-      {
-        id: 'm2',
-        content:
-          "I'll be happy to help you with your account settings. What specific settings are you trying to adjust?",
-        role: 'ai',
-        timestamp: '59 mins ago',
-      },
-      {
-        id: 'm3',
-        content: "I can't change my password",
-        role: 'human',
-        timestamp: '58 mins ago',
-      },
-    ],
-    status: 'pending',
-    category: 'Support',
-    priority: 'low',
-    created_at: '1 hour ago',
-    updated_at: '1 hour ago',
-  },
-  {
-    id: '7',
-    customer: {
-      name: 'Emily Davis',
-      email: 'emily@example.com',
-      status: 'online',
-    },
-    messages: [
-      {
-        id: 'm1',
-        content: 'I have a question about my order.',
-        role: 'human',
-        timestamp: '2 mins ago',
-      },
-      {
-        id: 'm2',
-        content: "Sure, what's your order number?",
-        role: 'ai',
-        timestamp: '1 min ago',
-      },
-      {
-        id: 'm3',
-        content: "It's #ORD-67890",
-        role: 'human',
-        timestamp: '59 secs ago',
-      },
-      {
-        id: 'm4',
-        content: "I'll check on that for you.",
-        role: 'ai',
-        timestamp: '58 secs ago',
-      },
-      {
-        id: 'm5',
-        content: 'Thank you for your patience.',
-        role: 'ai',
-        timestamp: '57 secs ago',
-      },
-      {
-        id: 'm6',
-        content: "I've checked on your order, it's being processed.",
-        role: 'ai',
-        timestamp: '56 secs ago',
-      },
-      {
-        id: 'm7',
-        content: "I've also checked on your other order, #ORD-67891.",
-        role: 'ai',
-        timestamp: '55 secs ago',
-      },
-      {
-        id: 'm8',
-        content: 'Thank you so much for letting me know!',
-        role: 'human',
-        timestamp: '54 secs ago',
-      },
-    ],
-    status: 'active',
-    category: 'Orders',
-    priority: 'medium',
-    created_at: '2 mins ago',
-    updated_at: '2 mins ago',
-  },
-];
+// const conversations: Conversation[] = [
+//   {
+//     id: '1',
+//     customer: {
+//       name: 'Alice Brown',
+//       email: 'alice@example.com',
+//       status: 'online',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'Hi, I need help with my account settings',
+//         role: 'human',
+//         timestamp: '2 mins ago',
+//       },
+//       {
+//         id: 'm2',
+//         content:
+//           "I'll be happy to help you with your account settings. What specific settings are you trying to adjust?",
+//         role: 'ai',
+//         timestamp: '1 min ago',
+//       },
+//       {
+//         id: 'm3',
+//         content: "I can't change my password",
+//         role: 'human',
+//         timestamp: '1 min ago',
+//       },
+//     ],
+//     status: 'active',
+//     category: 'Account',
+//     priority: 'medium',
+//     created_at: '10 mins ago',
+//     updated_at: '1 min ago',
+//   },
+//   {
+//     id: '2',
+//     customer: {
+//       name: 'John Smith',
+//       email: 'john@example.com',
+//       status: 'offline',
+//       lastSeen: '5 mins ago',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'How do I cancel my subscription?',
+//         role: 'human',
+//         timestamp: '15 mins ago',
+//       },
+//       {
+//         id: 'm2',
+//         content:
+//           "I can help you cancel your subscription. Could you please confirm which plan you're currently on?",
+//         role: 'ai',
+//         timestamp: '14 mins ago',
+//       },
+//     ],
+//     status: 'pending',
+//     category: 'Billing',
+//     priority: 'high',
+//     created_at: '15 mins ago',
+//     updated_at: '14 mins ago',
+//   },
+//   {
+//     id: '3',
+//     customer: {
+//       name: 'Sarah Johnson',
+//       email: 'sarah@example.com',
+//       status: 'online',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'When will my order be delivered?',
+//         role: 'human',
+//         timestamp: '1 hour ago',
+//       },
+//       {
+//         id: 'm2',
+//         content:
+//           'Let me check that for you. Could you please provide your order number?',
+//         role: 'ai',
+//         timestamp: '59 mins ago',
+//       },
+//       {
+//         id: 'm3',
+//         content: "It's #ORD-12345",
+//         role: 'human',
+//         timestamp: '58 mins ago',
+//       },
+//     ],
+//     status: 'active',
+//     category: 'Orders',
+//     priority: 'medium',
+//     created_at: '1 hour ago',
+//     updated_at: '58 mins ago',
+//   },
+//   {
+//     id: '4',
+//     customer: {
+//       name: 'Michael Green',
+//       email: 'michael@example.com',
+//       status: 'offline',
+//       lastSeen: '20 mins ago',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'What are your support hours?',
+//         role: 'human',
+//         timestamp: '30 mins ago',
+//       },
+//       {
+//         id: 'm2',
+//         content: 'Our support is available 24/7. How can I assist you further?',
+//         role: 'ai',
+//         timestamp: '29 mins ago',
+//       },
+//     ],
+//     status: 'resolved',
+//     category: 'Support',
+//     priority: 'low',
+//     created_at: '30 mins ago',
+//     updated_at: '29 mins ago',
+//   },
+//   {
+//     id: '5',
+//     customer: {
+//       name: 'Sarah Lee',
+//       email: 'sarah@example.com',
+//       status: 'online',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'I have a question about my order.',
+//         role: 'human',
+//         timestamp: '2 mins ago',
+//       },
+//     ],
+//     status: 'active',
+//     category: 'Orders',
+//     priority: 'high',
+//     created_at: '2 mins ago',
+//     updated_at: '2 mins ago',
+//   },
+//   {
+//     id: '6',
+//     customer: {
+//       name: 'John Doe',
+//       email: 'john@example.com',
+//       status: 'offline',
+//       lastSeen: '1 hour ago',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'I need help with my account settings',
+//         role: 'human',
+//         timestamp: '1 hour ago',
+//       },
+//       {
+//         id: 'm2',
+//         content:
+//           "I'll be happy to help you with your account settings. What specific settings are you trying to adjust?",
+//         role: 'ai',
+//         timestamp: '59 mins ago',
+//       },
+//       {
+//         id: 'm3',
+//         content: "I can't change my password",
+//         role: 'human',
+//         timestamp: '58 mins ago',
+//       },
+//     ],
+//     status: 'pending',
+//     category: 'Support',
+//     priority: 'low',
+//     created_at: '1 hour ago',
+//     updated_at: '1 hour ago',
+//   },
+//   {
+//     id: '7',
+//     customer: {
+//       name: 'Emily Davis',
+//       email: 'emily@example.com',
+//       status: 'online',
+//     },
+//     messages: [
+//       {
+//         id: 'm1',
+//         content: 'I have a question about my order.',
+//         role: 'human',
+//         timestamp: '2 mins ago',
+//       },
+//       {
+//         id: 'm2',
+//         content: "Sure, what's your order number?",
+//         role: 'ai',
+//         timestamp: '1 min ago',
+//       },
+//       {
+//         id: 'm3',
+//         content: "It's #ORD-67890",
+//         role: 'human',
+//         timestamp: '59 secs ago',
+//       },
+//       {
+//         id: 'm4',
+//         content: "I'll check on that for you.",
+//         role: 'ai',
+//         timestamp: '58 secs ago',
+//       },
+//       {
+//         id: 'm5',
+//         content: 'Thank you for your patience.',
+//         role: 'ai',
+//         timestamp: '57 secs ago',
+//       },
+//       {
+//         id: 'm6',
+//         content: "I've checked on your order, it's being processed.",
+//         role: 'ai',
+//         timestamp: '56 secs ago',
+//       },
+//       {
+//         id: 'm7',
+//         content: "I've also checked on your other order, #ORD-67891.",
+//         role: 'ai',
+//         timestamp: '55 secs ago',
+//       },
+//       {
+//         id: 'm8',
+//         content: 'Thank you so much for letting me know!',
+//         role: 'human',
+//         timestamp: '54 secs ago',
+//       },
+//     ],
+//     status: 'active',
+//     category: 'Orders',
+//     priority: 'medium',
+//     created_at: '2 mins ago',
+//     updated_at: '2 mins ago',
+//   },
+// ];
 
 export default function Conversations() {
   const [selectedConversation, setSelectedConversation] =
-    useState<Conversation | null>(conversations[0]);
+    useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const isMobile = useIsMobile(1024);
   const [showChat, setShowChat] = useState(false);
   const { handleOpen } = useCustomerDetailsModalStore();
+
+  const { data: conversationsData } = useSuspenseQuery({
+    queryKey: ['conversations'],
+    queryFn: () =>
+      API.conversation.getAllConversations({
+        includeAllMessages: true,
+        chatOnly: true,
+      }),
+  });
 
   // Handle conversation selection
   const handleSelectConversation = (conversation: Conversation) => {
@@ -297,7 +308,7 @@ export default function Conversations() {
   };
 
   return (
-    <div className="grid max-h-[calc(100vh-48px)] min-h-[calc(100vh-48px)] gap-4 sm:max-h-screen sm:min-h-screen sm:p-6 lg:grid-cols-[350px_1fr]">
+    <div className="grid max-h-[calc(100dvh-48px)] min-h-[calc(100dvh-48px)] min-w-0 gap-4 sm:max-h-dvh sm:min-h-dvh sm:p-6 lg:grid-cols-[350px_1fr]">
       {/* Conversations List - Hidden on mobile when chat is shown */}
       <Card
         className={`${isMobile && showChat ? 'hidden' : 'block'} w-full max-sm:rounded-none`}>
@@ -314,51 +325,53 @@ export default function Conversations() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="custom-scrollbar max-h-[calc(100vh-124px)] overflow-y-auto p-0">
+        <CardContent className="custom-scrollbar max-h-[calc(100dvh-124px)] min-w-0 overflow-y-auto p-0">
           {/* <ScrollArea className="h-[700px]"> */}
-          {conversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              onClick={() => handleSelectConversation(conversation)}
-              className={`hover:bg-muted/50 w-full p-4 text-left transition-colors ${
-                selectedConversation?.id === conversation.id ? 'bg-muted' : ''
-              }`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`h-2 w-2 rounded-full ${
-                      conversation.customer.status === 'online'
-                        ? 'bg-green-500'
-                        : 'bg-gray-300'
-                    }`}
-                  />
-                  <span className="font-medium">
-                    {conversation.customer.name}
-                  </span>
+
+          {conversationsData &&
+            conversationsData?.map((conversation) => (
+              <button
+                key={conversation.id}
+                onClick={() => handleSelectConversation(conversation)}
+                className={`hover:bg-muted/50 w-full min-w-0 p-4 text-left transition-colors ${
+                  selectedConversation?.id === conversation.id ? 'bg-muted' : ''
+                }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        conversation.user.name === 'online'
+                          ? 'bg-green-500'
+                          : 'bg-gray-300'
+                      }`}
+                    />
+                    <span className="font-medium">
+                      {conversation.user.name}
+                    </span>
+                  </div>
+                  <Badge
+                    variant={
+                      conversation.priority === 'high'
+                        ? 'destructive'
+                        : conversation.priority === 'medium'
+                          ? 'default'
+                          : 'secondary'
+                    }>
+                    {conversation.priority}
+                  </Badge>
                 </div>
-                <Badge
-                  variant={
-                    conversation.priority === 'high'
-                      ? 'destructive'
-                      : conversation.priority === 'medium'
-                        ? 'default'
-                        : 'secondary'
-                  }>
-                  {conversation.priority}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground mt-1 max-w-[200px] truncate text-sm sm:max-w-[250px] md:max-w-md">
-                {conversation.messages
-                  ? conversation.messages[conversation.messages?.length - 1]
-                      .content
-                  : ''}
-              </p>
-              <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-                <Clock className="h-3 w-3" />
-                <span>{conversation.updated_at}</span>
-              </div>
-            </button>
-          ))}
+                <p className="text-muted-foreground mt-1 max-w-[200px] truncate text-sm sm:max-w-[250px] md:max-w-md">
+                  {conversation.messages
+                    ? conversation.messages[conversation.messages?.length - 1]
+                        .content
+                    : ''}
+                </p>
+                <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                  <Clock className="h-3 w-3" />
+                  <span>{conversation.updated_at}</span>
+                </div>
+              </button>
+            ))}
           {/* </ScrollArea> */}
         </CardContent>
       </Card>
@@ -381,12 +394,12 @@ export default function Conversations() {
                 )}
                 <div
                   className={`h-2 w-2 rounded-full ${
-                    selectedConversation.customer.status === 'online'
+                    selectedConversation?.user?.name === 'online'
                       ? 'bg-green-500'
                       : 'bg-gray-300'
                   }`}
                 />
-                <CardTitle>{selectedConversation.customer.name}</CardTitle>
+                <CardTitle>{selectedConversation?.user?.name}</CardTitle>
               </div>
               <div className="flex items-center gap-2">
                 <DropdownMenu>
@@ -409,9 +422,9 @@ export default function Conversations() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="relative max-h-[calc(100vh-124px)] min-h-[calc(100vh-124px)] w-full p-4">
+          <CardContent className="relative max-h-[calc(100dvh-124px)] min-h-[calc(100dvh-124px)] w-full p-4">
             {/* <ScrollArea className="h-auto p-4"> */}
-            <div className="custom-scrollbar max-h-[calc(100vh-242px)] space-y-4 overflow-y-auto">
+            <div className="custom-scrollbar max-h-[calc(100dvh-242px)] space-y-4 overflow-y-auto">
               {selectedConversation.messages?.map((message, index) => (
                 <div
                   key={message.id}
@@ -459,7 +472,7 @@ export default function Conversations() {
           </p>
         </Card>
       )}
-      <CustomerDetailsModal selectedConversation={selectedConversation} />
+      {/* <CustomerDetailsModal selectedConversation={selectedConversation} /> */}
     </div>
   );
 }

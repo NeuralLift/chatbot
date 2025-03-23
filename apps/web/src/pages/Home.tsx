@@ -16,7 +16,7 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto flex min-h-screen flex-col">
+    <div className="mx-auto flex min-h-dvh flex-col">
       <header className="flex h-16 items-center border-b px-4 lg:px-6">
         <Link className="flex items-center gap-2 font-semibold" to="#">
           <Bot className="h-6 w-6" />

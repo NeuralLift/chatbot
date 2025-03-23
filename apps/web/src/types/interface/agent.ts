@@ -1,4 +1,4 @@
-import { Conversation } from './chat';
+// import { Conversation } from './chat';
 import { KnowledgeSource } from './knowledge';
 
 export interface Agent {
@@ -15,7 +15,10 @@ export interface Agent {
   system_prompt: string;
   createdAt: string;
   avatar?: string;
-  conversations: Conversation[];
+  // conversations: Conversation[];
+  _count: {
+    conversations: number;
+  };
   datasources: KnowledgeSource[];
   datasourceIds: string[];
 }

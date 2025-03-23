@@ -5,12 +5,12 @@
             "name": "project-root"
         },
         {
-            "path": "./server",
+            "path": "./apps/server",
             "name": "server"
         },
         {
-            "path": "./client",
-            "name": "client"
+            "path": "./apps/web",
+            "name": "web"
         }
     ]
 }

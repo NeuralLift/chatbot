@@ -5,6 +5,7 @@ interface AppConfig {
   PORT: string;
   BASE_API_PATH: string;
   SERVER_ORIGIN: string;
+  CLIENT_ORIGIN: string;
   RATE_TIME_LIMIT: string;
   RATE_REQUEST_LIMIT: string;
 }
@@ -23,6 +24,7 @@ const config = (): AppConfig => ({
     'SERVER_ORIGIN',
     `http://localhost:${getEnv('PORT', '3000')}`
   ),
+  CLIENT_ORIGIN: getEnv('CLIENT_ORIGIN', 'http://localhost:5173'),
 
   RATE_TIME_LIMIT: getEnv('RATE_TIME_LIMIT', '15'),
   RATE_REQUEST_LIMIT: getEnv('RATE_REQUEST_LIMIT', '1000'),

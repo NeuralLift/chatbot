@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router';
 
 import TopLoader from '@/components/TopLoader';
 
-const NotFound = lazy(() => import('@/components/NotFound'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 const ChatLayout = lazy(() => import('@/layout/ChatLayout'));
 const DashboardLayout = lazy(() => import('@/layout/DashboardLayout'));
 const AgentsPage = lazy(() => import('@/pages/Agents'));

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import {
   ChevronDown,
   ChevronUp,
@@ -49,10 +49,17 @@ export default function ChatSidebar() {
   const { pathname } = useLocation();
   const { setOpenMobile } = useSidebar();
   const { resetMessages } = useChatStore();
+  const queryClient = useQueryClient();
   /** Resets the chat messages to ensure a clean state. */
-  const handleBeforeNavigateConversation = (newConversationId: string) => {
+  const handleBeforeNavigateConversation = async (
+    newConversationId: string
+  ) => {
     if (newConversationId !== conversationId) {
       resetMessages();
+      await queryClient.prefetchQuery({
+        queryKey: ['conversation', newConversationId],
+        queryFn: () => API.conversation.getConversationId(newConversationId),
+      });
     }
   };
 
@@ -60,9 +67,12 @@ export default function ChatSidebar() {
     setOpenMobile(false);
   };
 
-  const { data: conversationsData, isLoading } = useQuery({
+  const { data: conversationsData, isLoading } = useSuspenseQuery({
     queryKey: ['conversations'],
-    queryFn: API.conversation.getAllConversations,
+    queryFn: () =>
+      API.conversation.getAllConversations({
+        includeAllMessages: true,
+      }),
   });
 
   return (

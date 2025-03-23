@@ -1,6 +1,6 @@
 import type React from 'react';
 import { memo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Bot, CreditCard, Settings, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -143,7 +143,7 @@ const SettingsContent = () => {
 };
 
 const AgentsContent = () => {
-  const { data: agentsData } = useQuery({
+  const { data: agentsData } = useSuspenseQuery({
     queryKey: ['agents'],
     queryFn: API.agent.getAllAgents,
     refetchOnWindowFocus: false,

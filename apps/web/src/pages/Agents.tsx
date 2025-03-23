@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 
 import { AgentList } from '@/components/agent/AgentList';
@@ -76,7 +76,7 @@ const DetailsAgentModal = lazy(
 
 export default function AgentsPage() {
   const { handleOpen } = useAgentModalStore();
-  const { data: agents, isLoading } = useQuery({
+  const { data: agents, isLoading } = useSuspenseQuery({
     queryKey: ['agents'],
     queryFn: API.agent.getAllAgents,
   });

@@ -109,8 +109,14 @@ function AddKnowledgeBaseContent() {
   const { mutate: addKnowledgeMutation, isPending } = useAddKnowledgeMutation();
   const { mutate: editKnowledgeMutation, isPending: isEditPending } =
     useEditKnowledgeMutation();
-  const { attachments, isUploading, uploadProgress, startUpload, reset } =
-    useMediaUpload();
+  const {
+    attachments,
+    isUploading,
+    uploadProgress,
+    setAttachments,
+    startUpload,
+    reset,
+  } = useMediaUpload();
 
   const { getInputProps, getRootProps } = useDropzone({
     onDrop: startUpload,
@@ -122,6 +128,7 @@ function AddKnowledgeBaseContent() {
   const { data: agentsData } = useQuery({
     queryKey: ['agents'],
     queryFn: API.agent.getAllAgents,
+    refetchOnWindowFocus: false,
   });
 
   const [multiSelectOptions, setMultiSelectOptions] = useState<Option[]>([]);
@@ -158,8 +165,22 @@ function AddKnowledgeBaseContent() {
         'agentIds',
         source.agentIds.map((id) => id) //relasi agentonDatabase
       );
+
+      setAttachments([
+        {
+          url: source.fileUrl,
+          file: {
+            type: source.type,
+            name: source.name + '_document',
+            size: source.size,
+            webkitRelativePath: '',
+            lastModified: 0,
+          } as File,
+          isUploading: false,
+        },
+      ]);
     }
-  }, [source, form]);
+  }, [source, form, setAttachments]);
 
   useEffect(() => {
     if (attachments.length) {

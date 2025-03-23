@@ -84,9 +84,44 @@ export class ConversationService {
     try {
       const conversations = await db.conversation.findMany({
         include: {
-          messages: {
-            take: 1,
+          messages: { take: 1 },
+          user: true,
+        },
+      });
+
+      return conversations;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  public static async getAllConversationsAndMessages() {
+    try {
+      const conversations = await db.conversation.findMany({
+        include: {
+          messages: true,
+          user: true,
+        },
+      });
+
+      return conversations;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  public static async getAllConversationsChatOnly() {
+    try {
+      const conversations = await db.conversation.findMany({
+        where: {
+          chatId: {
+            not: null,
           },
+        },
+        include: {
+          messages: true,
           user: true,
         },
       });
