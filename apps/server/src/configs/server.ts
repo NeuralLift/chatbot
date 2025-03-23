@@ -46,10 +46,10 @@ export class Server {
 
     // Serve the static files from the React app
     this.app.get('/', (_req, res) => {
-      res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
+      res.sendFile(path.join(__dirname, '../../../web/dist/index.html'));
     });
     this.app.use(
-      express.static(path.join(__dirname, '../../web/dist'), {
+      express.static(path.join(__dirname, '../../../web/dist'), {
         maxAge: '1d',
       })
     );
@@ -88,7 +88,7 @@ export class Server {
 
     // Catch-all route to handle client-side routing
     this.app.get('*', (_req, res) => {
-      res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
+      res.sendFile(path.join(__dirname, '../../../web/dist/index.html'));
     });
   }
 
